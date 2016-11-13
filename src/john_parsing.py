@@ -25,6 +25,8 @@ words.sort()
 characters.sort()
 sentences.sort()
 
+print characters[-1]
+
 file_write.write("characters\n")
 file_write.write("\tmean: " + str(sum(characters) / len(characters)) + "\n")
 file_write.write ("\t25th percentile: " + str(characters[len(characters) / 4]) + "\n")
