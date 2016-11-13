@@ -43,7 +43,7 @@ def vocab_to_word2vec(filename, vocab, k=300):
     Load word2vec from Mikolov
     """
     word_vecs = {}
-    with open(fname, "rb") as f:
+    with open(filename, "rb") as f:
         header = f.readline()
         vocab_size, layer1_size = map(int, header.split())
         binary_len = np.dtype('float32').itemsize * layer1_size
@@ -111,14 +111,16 @@ def build_input_data(sentences, labels, vocabulary):
 
 
 if __name__ == "__main__":
-    source_file = sys.argv[1]
-    googlenews_file = sys.argv[2]
+    source_file = "../yelp_data/yelp_academic_dataset_review.json"
+    googlenews_file = "../google_data/GoogleNews-vectors-negative300.bin"
 
-    sentences, labels = load_data(source) #sentences is a list of lists
+    sentences, labels = load_data(source_file) #sentences is a list of lists
     print str(len(sentences)) + " sentences read"
 
     vocabulary, vocabulary_inv = build_vocab(sentences)
     print "Vocabulary size: "+str(len(vocabulary))
+    for i in vocabulary.keys()[0:25]:
+        print i, vocabulary[i]
 
 
     #print transform_text("I Like you, girl! hello...", vocabulary)
@@ -126,6 +128,8 @@ if __name__ == "__main__":
     word2vec = vocab_to_word2vec(googlenews_file, vocabulary)
 
     embedding_mat = build_word_embedding_mat(word2vec, vocabulary_inv)
+
+    print embedding_mat[0:5]
     x, y = build_input_data(sentences, labels, vocabulary)
     cPickle.dump([x, y, embedding_mat], open('train_mat.pkl', 'wb'))
     #cPickle.dump(word2vec, open('../data/word2vec.pkl', 'wb'))
