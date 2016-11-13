@@ -1,0 +1,5 @@
+#ignores the yelp_data folder
+#this folder contains the data directly downloaded from yelp challenged
+#cleaned data should be later added to the git repo
+
+yelp_data
