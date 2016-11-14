@@ -47,5 +47,5 @@ def word2vec(reviews):
     # create a mapping betwee nthe review index and its corresponding embedded matrix of size (num_words, 300)   
     review_to_embedded_matrix = {}
     for i in xrange(len(reviews)):
-        review_to_embedded_matrix[i] = [word_vecs[word] for word in review]
+        review_to_embedded_matrix[i] = [word_vecs[word] for word in reviews[i]]
     return review_to_embedded_matrix

@@ -1,7 +1,7 @@
-oimport numpy as np
+import numpy as np
 import json 
 from nltk.tokenize import RegexpTokenizer
-from bag_of_words_model import bag_of_words
+from bag_of_words import bag_of_words
 from word2vec_model import word2vec
 
 	
@@ -11,7 +11,7 @@ class Preprocessor:
 	Class for conversion from string to the list of words
 
 	Current implementation:
-	     - strips out the punctuation and lower case each words
+		 - strips out the punctuation and lower case each words
 
 	TODO:
 		 - add spell checker
@@ -46,26 +46,26 @@ class DataProcessor:
 
 
 	def get_data(self):
-    	with open(self.source_file) as f:
-        	for line in f:
-           	review = json.loads(line)
-            self.reviews.append(self.preprocessor.run(review['text']))
-            self.stars.append(review["stars"])
+		with open(self.source_file) as f:
+			for line in f:
+				review = json.loads(line)
+				self.reviews.append(self.preprocessor.run(review['text']))
+				self.stars.append(review["stars"])
 
-    
-    
-    def build_embedded_matrices(self):
-    	'''
-    	API method, do not change
-    	'''
-    	self.get_data()
-    	self.review_to_embedded_matrix = self.model(self.reviews)
+	
+	
+	def build_embedded_matrices(self):
+		'''
+		API method, do not change
+		'''
+		self.get_data()
+		self.review_to_embedded_matrix = self.model(self.reviews)
 
-    def get_embedded_matrices(self):
-    	return self.review_to_embedded_matrix
-    	
-    def get_stars(self):
-    	return self.stars
+	def get_embedded_matrices(self):
+		return self.review_to_embedded_matrix
+		
+	def get_stars(self):
+		return self.stars
 
 
 

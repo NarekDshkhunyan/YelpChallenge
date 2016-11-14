@@ -2,3 +2,4 @@
 yelp_data
 google_data
 *.pyc
+*.pkl
