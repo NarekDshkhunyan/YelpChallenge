@@ -2,7 +2,6 @@ import numpy as np
 import itertools
 from collections import Counter
 import cPickle
-import numpy as np
 import json 
 from nltk.tokenize import RegexpTokenizer
 import sys
