@@ -1,0 +1,15 @@
+characters
+	mean: 621
+	25th percentile: 237
+	50th percentile: 439
+	75th percentile: 800
+words
+	mean: 116
+	25th percentile:: 44
+	50th percentile:: 82
+	75thth percentile:: 150
+sentences
+	mean: 7
+	25th percentile:: 3
+	50th percentile:: 6
+	75th percentile:: 10

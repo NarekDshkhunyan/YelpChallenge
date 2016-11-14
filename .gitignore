@@ -1,3 +1,4 @@
 #ignores the yelp_data folder
 yelp_data
 google_data
+*.pyc
