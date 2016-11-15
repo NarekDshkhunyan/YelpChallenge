@@ -1,7 +1,5 @@
-import numpy as np
 import json 
 from nltk.tokenize import RegexpTokenizer
-from bag_of_words import bag_of_words
 from word2vec_model import word2vec
 
 	

@@ -2,10 +2,8 @@ import numpy as np
 import itertools
 from collections import Counter
 import cPickle
-import numpy as np
 import json 
 from nltk.tokenize import RegexpTokenizer
-import sys
 import io
 tokenizer = RegexpTokenizer(r'\w+')
 
@@ -48,7 +46,7 @@ def vocab_to_word2vec(filename, vocab, k=300):
         header = f.readline()
         vocab_size, layer1_size = map(int, header.split())
         binary_len = np.dtype('float32').itemsize * layer1_size
-        for line in xrange(vocab_size):
+        for _ in xrange(vocab_size):
             word = []
             while True:
                 ch = f.read(1)
@@ -58,7 +56,7 @@ def vocab_to_word2vec(filename, vocab, k=300):
                 if ch != '\n':
                     word.append(ch)
             if word in vocab:
-               word_vecs[word] = np.fromstring(f.read(binary_len), dtype='float32')
+                word_vecs[word] = np.fromstring(f.read(binary_len), dtype='float32')
             else:
                 f.read(binary_len)
     #print str(len(word_vecs))+" words found in word2vec."
@@ -126,7 +124,7 @@ if __name__ == "__main__":
     print "Vocabulary size: "+str(len(vocabulary))
 
     #print transform_text("I Like you, girl! hello...", vocabulary)
-    unidentified_words_file = io.open('unidentified_words.text', 'w', encoding='utf8')
+    unidentified_words_file = io.open('unidentified_words2.text', 'w', encoding='utf8')
     word2vec = vocab_to_word2vec(googlenews_file, vocabulary)
     unidentified_words_file.close()
 
@@ -134,7 +132,7 @@ if __name__ == "__main__":
 
     print embedding_mat[0:5]
     x, y = build_input_data(sentences, labels, vocabulary)
-    cPickle.dump([x, y, embedding_mat], open('train_mat.pkl', 'wb'))
+    cPickle.dump([x, y, embedding_mat], open('train_mat2.pkl', 'wb'))
     #cPickle.dump(word2vec, open('../data/word2vec.pkl', 'wb'))
     cPickle.dump(vocabulary, open('vocab.pkl', 'wb'))
     print "Data created"
