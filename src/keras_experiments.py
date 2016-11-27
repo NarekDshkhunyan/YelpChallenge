@@ -1,12 +1,10 @@
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
-from keras.datasets import imdb
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
 from keras.layers.embeddings import Embedding
 from keras.preprocessing import sequence
-import sys
 import cPickle
 import random
 '''

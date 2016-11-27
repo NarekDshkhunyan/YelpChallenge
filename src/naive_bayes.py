@@ -67,21 +67,21 @@ def evaluate(y_test, y_predicted, results):
 	return results
 
 def main():
-    gnb = MultinomialNB()
+	gnb = MultinomialNB()
 
-    data,labels = load_data()
-    data = np.array(data)
-    labels = np.array(labels)
-    counter = Counter(labels)
-    
-    data, labels = get_random_samples(data,labels)
-    print "Loaded ", len(data), " samples and ", len(labels)," labels."
-    data = transform_data(data) # get BOW representation
+	data,labels = load_data()
+	data = np.array(data)
+	labels = np.array(labels)
+	counter = Counter(labels)
+	
+	data, labels = get_random_samples(data,labels)
+	print "Loaded ", len(data), " samples and ", len(labels)," labels."
+	data = transform_data(data) # get BOW representation
 
-    skf = StratifiedKFold(n_splits=N_FOLDS)
-    results = {'accuracy' : [], 'precision' : [], 'recall' : [], 'f1' : []}
-    results_random = {'accuracy' : [], 'precision' : [], 'recall' : [], 'f1' : []}
-    for train, test in skf.split(data, labels):
+	skf = StratifiedKFold(n_splits=N_FOLDS)
+	results = {'accuracy' : [], 'precision' : [], 'recall' : [], 'f1' : []}
+	results_random = {'accuracy' : [], 'precision' : [], 'recall' : [], 'f1' : []}
+	for train, test in skf.split(data, labels):
 		X_train, X_test = data[train], data[test]
 		y_train, y_test = labels[train], labels[test]
 
@@ -99,11 +99,11 @@ def main():
 			print
 
 
-    print "\n=====================Total average results==================="
-    for key in results:
+	print "\n=====================Total average results==================="
+	for key in results:
 		print key+" = %.3f," % (sum(results[key])/N_FOLDS),
 
-    if COMPARE_WITH_RANDOM:
+	if COMPARE_WITH_RANDOM:
 		print
 		print "=====================Total average for random ==================="
 		for key in results:

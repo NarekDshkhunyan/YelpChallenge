@@ -4,9 +4,7 @@ from collections import Counter
 import cPickle
 import json 
 from nltk.tokenize import RegexpTokenizer
-import io
 import time
-import sys
 
 tokenizer = RegexpTokenizer(r'\w+')
 #not used
