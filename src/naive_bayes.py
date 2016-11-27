@@ -72,6 +72,8 @@ def main():
     data,labels = load_data()
     data = np.array(data)
     labels = np.array(labels)
+    counter = Counter(labels)
+    
     data, labels = get_random_samples(data,labels)
     print "Loaded ", len(data), " samples and ", len(labels)," labels."
     data = transform_data(data) # get BOW representation
