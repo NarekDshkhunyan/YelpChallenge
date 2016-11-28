@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import LabelEncoder
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
@@ -7,6 +8,8 @@ from keras.layers.embeddings import Embedding
 from keras.preprocessing import sequence
 import cPickle
 import random
+from keras.utils import np_utils
+
 '''
 Sources:
 LSTM:
@@ -25,7 +28,7 @@ N_FOLDS = 10 # 10% for test, 90% for train
 LSTM_MEM_UNITS = 100
 
 MAX_SAMPLES = 65323 # maximum number of available samples, do not change
-MAX_SAMPLES_TO_USE = 5000 # can be changed
+MAX_SAMPLES_TO_USE = 10000 # can be changed
 assert(MAX_SAMPLES_TO_USE <= MAX_SAMPLES)
 
 def get_vocabs():
@@ -60,24 +63,37 @@ def main():
 
 	vocabulary, vocabulary_inv = get_vocabs()
 	data, labels, embedding_matrx = load_data()
+	max_review_length = max([len(i) for i in data])
 	data,labels = get_random_samples(np.array(data), np.array(labels))
 	print len(data), " samples and ", len(labels), " ready."
+	
+	max_review_length = max([len(i) for i in data])
 	vocab_size = len(vocabulary)
 	num_labels = 5
+	encoder = LabelEncoder()
+	encoder.fit(labels)
 	skf = StratifiedKFold(n_splits=N_FOLDS)
 	
 	for train, test in skf.split(data, labels):
 		X_train, X_test = data[train], data[test]
 		y_train, y_test = np.array(labels[train]), np.array(labels[test])
-		X_train = sequence.pad_sequences(X_train)
-		X_test = sequence.pad_sequences(X_test)
+		X_train = sequence.pad_sequences(X_train, maxlen=max_review_length)
+		X_test = sequence.pad_sequences(X_test, maxlen=max_review_length)
+		
+
+		y_train = encoder.transform(y_train)
+		# convert integers to dummy variables (i.e. one hot encoded)
+		y_train = np_utils.to_categorical(y_train)
+
+		y_test = encoder.transform(y_test)
+		y_test = np_utils.to_categorical(y_test)
 
 		model = Sequential()
 		#use existing embedding weights
-		model.add(Embedding(input_dim=vocab_size + 1, output_dim=300, mask_zero=True, weights=[embedding_matrx])) 
-		model.add(LSTM(input_dim=300, output_dim=LSTM_MEM_UNITS))
+		model.add(Embedding(input_dim=vocab_size + 1, output_dim=300, mask_zero=True, weights=[embedding_matrx],input_length=X_train.shape[1])) 
+		model.add(LSTM(LSTM_MEM_UNITS))
 		#model.add(Dropout(0.5))
-		model.add(Dense(output_dim=num_labels, input_dim=LSTM_MEM_UNITS,activation='sigmoid'))
+		model.add(Dense(num_labels,activation='sigmoid'))
 		model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 		print(model.summary())
 		model.fit(X_train, y_train, nb_epoch=3, batch_size=64)
