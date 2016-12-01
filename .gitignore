@@ -3,3 +3,7 @@ yelp_data
 google_data
 *.pyc
 *.pkl
+report_template/*.log
+report_template/*.out
+report_template/*.aux
+report_template/*.gz
