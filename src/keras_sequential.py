@@ -6,6 +6,7 @@ from keras.layers import Dense
 from keras.layers import LSTM
 from keras.layers.embeddings import Embedding
 from keras.preprocessing import sequence
+#from keras import *
 import cPickle
 import random
 from keras.utils import np_utils
@@ -25,10 +26,10 @@ vocab_inv_file = "vocab_inv_filtered.pkl"
 
 # PARAMETERS
 N_FOLDS = 10  # 10% for test, 90% for train
-LSTM_MEM_UNITS = 100
+LSTM_MEM_UNITS = 10
 
 MAX_SAMPLES = 65323  # maximum number of available samples, do not change
-MAX_SAMPLES_TO_USE = 10000  # can be changed
+MAX_SAMPLES_TO_USE = 20000  # can be changed
 assert (MAX_SAMPLES_TO_USE <= MAX_SAMPLES)
 
 
@@ -95,11 +96,11 @@ def main():
         model.add(Embedding(input_dim=vocab_size + 1, output_dim=300, mask_zero=True, weights=[embedding_matrx],
                             input_length=X_train.shape[1]))
         model.add(LSTM(LSTM_MEM_UNITS))
-        # model.add(Dropout(0.5))
+        model.add(Dropout(0.5))
         model.add(Dense(num_labels, activation='sigmoid'))
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
         print(model.summary())
-        model.fit(X_train, y_train, nb_epoch=3, batch_size=64)
+        model.fit(X_train, y_train, nb_epoch=3, batch_size=16)
         # Final evaluation of the model
         scores = model.evaluate(X_test, y_test, verbose=0)
         print("Accuracy: %.2f%%" % (scores[1] * 100))

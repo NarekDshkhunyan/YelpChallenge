@@ -11,15 +11,14 @@ import cPickle
 import random
 from keras.utils import np_utils
 
-'''
-Sources:
-LSTM:
-http://machinelearningmastery.com/sequence-classification-lstm-recurrent-neural-networks-python-keras/
-Use existing word2vec embedding:
-https://github.com/fchollet/keras/issues/853
-How to make a multiclass classifier:
-http://machinelearningmastery.com/multi-class-classification-tutorial-keras-deep-learning-library/
-'''
+('\n'
+ 'Sources:\n'
+ 'LSTM:\n'
+ 'http://machinelearningmastery.com/sequence-classification-lstm-recurrent-neural-networks-python-keras/\n'
+ 'Use existing word2vec embedding:\n'
+ 'https://github.com/fchollet/keras/issues/853\n'
+ 'How to make a multiclass classifier:\n'
+ 'http://machinelearningmastery.com/multi-class-classification-tutorial-keras-deep-learning-library/\n')
 data_file = "train_mat_filtered.pkl"
 vocab_file = "vocab_filtered.pkl"
 vocab_inv_file = "vocab_inv_filtered.pkl"
