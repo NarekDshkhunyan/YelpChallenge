@@ -31,6 +31,7 @@ LSTM_MEM_UNITS = 10
 
 MAX_SAMPLES = 65323  # maximum number of available samples, do not change
 MAX_SAMPLES_TO_USE = 20000  # can be changed
+MAX_SAMPLES_PER_RATING = 4500 # can be set to up to 4002, after which default value is 4002
 assert (MAX_SAMPLES_TO_USE <= MAX_SAMPLES)
 
 
@@ -63,6 +64,19 @@ def get_random_samples(data, labels):
         return data, labels
     indicies = random.sample(xrange(len(data)), MAX_SAMPLES_TO_USE)
     return data[indicies], labels[indicies]
+
+def get_random_samples_strictly_uniform(data,labels):
+    counts = np.bincount(labels)
+    max_available = min(min(counts[1:]), MAX_SAMPLES_PER_RATING)
+    ratings_arr = [np.where(labels == i) for i in xrange(1, 6)]
+    
+    relevant_indices = []
+    for s in ratings_arr:
+        chosen = random.sample(xrange(len(s[0])), max_available)
+        chosen_idx = [int(s[0][i]) for i in chosen]
+        relevant_indices.extend(chosen_idx)
+        
+    return data[relevant_indices], labels[relevant_indices]
 
 
 def main():

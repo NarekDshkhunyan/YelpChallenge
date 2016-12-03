@@ -29,6 +29,7 @@ LSTM_MEM_UNITS = 100
 BATCH_SIZE = 64
 MAX_SAMPLES = 65323 # maximum number of available samples, do not change
 MAX_SAMPLES_TO_USE = 5000 # can be changed
+MAX_SAMPLES_PER_RATING = 4500 # can be set to up to 4002, after which default value is 4002
 assert(MAX_SAMPLES_TO_USE <= MAX_SAMPLES)
 
 def get_vocabs():
@@ -59,13 +60,26 @@ def get_random_samples(data,labels):
 	indicies = random.sample(xrange(len(data)), MAX_SAMPLES_TO_USE)
 	return data[indicies], labels[indicies]
 
+def get_random_samples_strictly_uniform(data,labels):
+	counts = np.bincount(labels)
+	max_available = min(min(counts[1:]), MAX_SAMPLES_PER_RATING)
+	ratings_arr = [np.where(labels == i) for i in xrange(1, 6)]
+	
+	relevant_indices = []
+	for s in ratings_arr:
+		chosen = random.sample(xrange(len(s[0])), max_available)
+		chosen_idx = [int(s[0][i]) for i in chosen]
+		relevant_indices.extend(chosen_idx)
+		
+	return data[relevant_indices], labels[relevant_indices]
+
 def main():
 
 	vocabulary, vocabulary_inv = get_vocabs()
 	data, labels, embedding_matrx = load_data()
 	max_review_length = max([len(i) for i in data])
-	data,labels = get_random_samples(np.array(data), np.array(labels))
-	print len(data), " samples and ", len(labels), " ready."
+	
+	data,labels = get_random_samples_strictly_uniform(np.array(data), np.array(labels))
 	
 	max_review_length = max([len(i) for i in data])
 	vocab_size = len(vocabulary)

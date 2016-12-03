@@ -22,6 +22,7 @@ METRICS_CHOICE = 'weighted'  # computes global precision, recall and f1 (not sam
 
 MAX_SAMPLES = 65323  # maximum number of available samples, do not change
 MAX_SAMPLES_TO_USE = 60000  # can be changed
+MAX_SAMPLES_PER_RATING = 4500 # can be set to up to 4002, after which default value is 4002
 assert (MAX_SAMPLES_TO_USE <= MAX_SAMPLES)
 
 with open(vocab_file) as f:
@@ -57,6 +58,19 @@ def get_random_samples(data, labels):
         return data, labels
     indicies = random.sample(xrange(len(data)), MAX_SAMPLES_TO_USE)
     return data[indicies], labels[indicies]
+
+def get_random_samples_strictly_uniform(data,labels):
+    counts = np.bincount(labels)
+    max_available = min(min(counts[1:]), MAX_SAMPLES_PER_RATING)
+    ratings_arr = [np.where(labels == i) for i in xrange(1, 6)]
+    
+    relevant_indices = []
+    for s in ratings_arr:
+        chosen = random.sample(xrange(len(s[0])), max_available)
+        chosen_idx = [int(s[0][i]) for i in chosen]
+        relevant_indices.extend(chosen_idx)
+        
+    return data[relevant_indices], labels[relevant_indices]
 
 
 def evaluate(y_test, y_predicted, results):
@@ -120,3 +134,15 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
+#     Current Performance (with get_random_samples)
+#     =====================Total average results===================
+#     f1 = 0.601, recall = 0.618, precision = 0.597, accuracy = 0.618,
+#     =====================Total average for random ===================
+#     f1 = 0.317, recall = 0.317, precision = 0.317, accuracy = 0.317,
+    
+#     Current Performance (with get_random_samples_strictly_uniform)
+#     =====================Total average results===================
+#     f1 = 0.533, recall = 0.536, precision = 0.533, accuracy = 0.536,
+#     =====================Total average for random ===================
+#     f1 = 0.195, recall = 0.195, precision = 0.195, accuracy = 0.195,
