@@ -181,7 +181,7 @@ del skip_window                        # remove skip_window setting used for tes
 
 # In[ ]:
 
-Construct a neural net to run either of the models
+# Construct a neural net to run either of the models
 
 
 # In[72]:
