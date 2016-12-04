@@ -2,6 +2,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import train_test_split
 
 from sklearn.naive_bayes import MultinomialNB, GaussianNB
+from sklearn.grid_search import GridSearchCV
 from sklearn import svm
 from sklearn.neighbors import NearestNeighbors, RadiusNeighborsClassifier, KNeighborsClassifier
 from sklearn import tree
@@ -27,7 +28,7 @@ METRICS_CHOICE = 'weighted'  # computes global precision, recall and f1 (not sam
 # http://stats.stackexchange.com/questions/99694/what-does-it-imply-if-accuracy-and-recall-are-the-same
 
 MAX_SAMPLES = 65323  # maximum number of available samples, do not change
-MAX_SAMPLES_TO_USE = 60000  # can be changed
+MAX_SAMPLES_TO_USE = 10000  # can be changed
 MAX_SAMPLES_PER_RATING = 4500 # can be set to up to 4002, after which default value is 4002
 assert (MAX_SAMPLES_TO_USE <= MAX_SAMPLES)
 
@@ -129,11 +130,17 @@ def main():
     # results = evaluate(y_test, y_predicted, results)
     # print results
 
-    #clf = svm.SVC(kernel="linear", gamma=1.0)
-    clf = svm.SVC(C=1000.0, kernel="rbf")
+    clf = svm.SVC(kernel="linear", gamma=1.0)
+    # param_grid = {
+    #      'C': [1e3, 5e3, 1e4, 5e4, 1e5],
+    #       'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1],
+    #       }
+    #clf = GridSearchCV(svm.SVC(kernel='rbf', class_weight='balanced'), param_grid)
+    #clf = svm.SVC(C=1000.0, kernel="rbf")
     clf = clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     print clf.score(X_test, y_test)
+    #print [np.where(clf.feature_importances_ == feature) for feature in clf.feature_importances_ if feature > 0.05]
     results = evaluate(y_test, y_pred, results)
     print results
 
@@ -148,6 +155,8 @@ def main():
     clf = clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     print clf.score(X_test, y_test)
+    print [np.where(clf.feature_importances_ == feature) for feature in clf.feature_importances_ if feature > 0.02]
+    print vocabulary_inv[538], vocabulary_inv[1505], vocabulary_inv[2247], vocabulary_inv[6931], vocabulary_inv[9341], vocabulary_inv[10718]
     results = evaluate(y_test, y_pred, results)
     print results
 

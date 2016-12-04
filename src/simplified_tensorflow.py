@@ -12,7 +12,7 @@ import numpy as np
 #data_dir = "/Users/danamukusheva/Desktop/6.864/project/6.864_project/src"
 data_dir = "./"
 data_file = "train_mat_filtered.pkl"
-RUN_BIDIRECTIONAL = False
+RUN_BIDIRECTIONAL = True
 
 MAX_SAMPLES = 65323 # maximum number of available samples, do not change
 TRAIN_SET_SIZE = 30000 # these do not matter if using get_random_samples_strictly_uniform
@@ -152,9 +152,8 @@ encoder = LabelEncoder()
 encoder.fit(labels)
 
 
-
-#train_set_ind,test_set_ind = get_random_samples(TRAIN_SET_SIZE, TEST_SET_SIZE)
-train_set_ind,test_set_ind =get_random_samples_strictly_uniform(labels,0.1)
+train_set_ind,test_set_ind = get_random_samples(TRAIN_SET_SIZE, TEST_SET_SIZE)
+#train_set_ind,test_set_ind =get_random_samples_strictly_uniform(labels,0.1)
 train_data, train_labels = data[train_set_ind],labels[train_set_ind]
 test_data, test_labels = data[test_set_ind],labels[test_set_ind]
 
@@ -211,15 +210,35 @@ def dynamicRNN(x, seqlen, weights, biases):
         # Get lstm cell output
         outputs, states = rnn.rnn(lstm_cell, x, dtype=tf.float32,sequence_length=seqlen)
 
+        print("Before transpose")
+        print(len(outputs))
+        print(outputs[0].get_shape().as_list())
+        print(outputs[10].get_shape().as_list()), '\n'
+
         outputs = tf.pack(outputs)
         outputs = tf.transpose(outputs, [1, 0, 2])
 
+        print("After transpose")
+        print(outputs.get_shape().as_list())
+        print(tf.shape(outputs))
+        print(outputs[0].get_shape().as_list())
+        print(outputs[10].get_shape().as_list()), '\n'
+
+        #print(len(outputs))
+
         # Hack to build the indexing and retrieve the right output.
         batch_size = tf.shape(outputs)[0]
+        print(batch_size)
         # Start indices for each sample
         index = tf.range(0, batch_size) * max_seq_len + (seqlen - 1)
         # Indexing
         outputs = tf.gather(tf.reshape(outputs, [-1, N_HIDDEN]), index)
+
+        print("After reshape")
+        print(outputs.get_shape().as_list())
+        print(outputs[0].get_shape().as_list())
+        print(outputs[10].get_shape().as_list()), '\n'
+
         # Linear activation, using outputs computed above
         return tf.matmul(outputs, weights['out']) + biases['out']
 
@@ -233,14 +252,39 @@ def dynamicRNN(x, seqlen, weights, biases):
 
         # Get lstm cell output
         try:
-            outputs, _, _ = rnn.bidirectional_dynamic_rnn(lstm_fw_cell, lstm_bw_cell, x,
-                                                  dtype=tf.float32,sequence_length=seqlen)
+            outputs, _, _ = rnn.bidirectional_dynamic_rnn(lstm_fw_cell, lstm_bw_cell, x, dtype=tf.float32,sequence_length=seqlen)
         except Exception: # Old TensorFlow version only returns outputs not states
-            outputs = rnn.bidirectional_rnn(lstm_fw_cell, lstm_bw_cell, x,
-                                            dtype=tf.float32)
+            outputs = rnn.bidirectional_rnn(lstm_fw_cell, lstm_bw_cell, x, dtype=tf.float32)
 
+        print("Before transpose")
+        print(len(outputs))
+        #print(outputs[0].get_shape().as_list())
+        print(len(outputs[0]))
+        print(outputs[0][1].get_shape().as_list())
+        print(outputs[0][2].get_shape().as_list())
+
+        outputs = tf.pack(outputs[0])
+        outputs = tf.transpose(outputs, [1, 0, 2])
+
+        print("After transpose")
+        #print(outputs[0].get_shape().as_list())
+        print(outputs[0][1].get_shape().as_list())
+        print(outputs[0][2].get_shape().as_list())
+
+        batch_size = tf.shape(outputs)[0]
+        # Start indices for each sample
+        index = tf.range(0, batch_size) * max_seq_len + (seqlen - 1)
+        # Indexing
+        outputs = tf.gather(tf.reshape(outputs, [-1, 2*N_HIDDEN]), index)
+
+        print("After reshape")
+        #print(outputs[0].get_shape().as_list())
+        print(outputs[0].get_shape().as_list())
+        print(outputs[0].get_shape().as_list())
+
+        # print(outputs.shape)
         # Linear activation, using rnn inner loop last output
-        return tf.matmul(outputs[-1], weights['out']) + biases['out']
+        return tf.matmul(outputs, weights['out']) + biases['out']
 
 
 
@@ -268,11 +312,9 @@ with tf.Session() as sess:
         sess.run(optimizer, feed_dict={x: batch_x, y: batch_y, seqlen: batch_seqlen})
         if step % DISPLAY_STEP == 0:
             # Calculate batch accuracy
-            acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y,
-                                                seqlen: batch_seqlen})
+            acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y, seqlen: batch_seqlen})
             # Calculate batch loss
-            loss = sess.run(cost, feed_dict={x: batch_x, y: batch_y,
-                                             seqlen: batch_seqlen})
+            loss = sess.run(cost, feed_dict={x: batch_x, y: batch_y, seqlen: batch_seqlen})
             print("Iter " + str(step*BATCH_SIZE) + ", Minibatch Loss= " + \
                   "{:.6f}".format(loss) + ", Training Accuracy= " + \
                   "{:.5f}".format(acc))
@@ -282,6 +324,4 @@ with tf.Session() as sess:
     test_data = testset.pad_all()
     test_label = testset.labels
     test_seqlen = testset.seq_len
-    print("Testing Accuracy:", \
-        sess.run(accuracy, feed_dict={x: test_data, y: test_label,
-                                      seqlen: test_seqlen}))
+    print("Testing Accuracy:", sess.run(accuracy, feed_dict={x: test_data, y: test_label, seqlen: test_seqlen}))
