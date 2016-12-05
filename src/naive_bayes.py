@@ -1,15 +1,13 @@
-from sklearn.model_selection import StratifiedKFold
+
 from sklearn.model_selection import train_test_split
 
 from sklearn.naive_bayes import MultinomialNB, GaussianNB
 from sklearn.grid_search import GridSearchCV
-from sklearn import svm
+from sklearn import svm, tree
 from sklearn.neighbors import NearestNeighbors, RadiusNeighborsClassifier, KNeighborsClassifier
-from sklearn import tree
 
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from spellchecker import correction
 
 import cPickle
@@ -23,7 +21,7 @@ vocab_inv_file = "vocab_inv_filtered.pkl"
 
 # PARAMETERS
 N_FOLDS = 10  # 10% for test, 90% for train
-COMPARE_WITH_RANDOM = False
+COMPARE_WITH_RANDOM = True
 METRICS_CHOICE = 'weighted'  # computes global precision, recall and f1 (not sample or label wise)
 # TODO: ask which one is better: 'micro' or 'weighted'
 
@@ -31,7 +29,7 @@ METRICS_CHOICE = 'weighted'  # computes global precision, recall and f1 (not sam
 # http://stats.stackexchange.com/questions/99694/what-does-it-imply-if-accuracy-and-recall-are-the-same
 
 MAX_SAMPLES = 65323  # maximum number of available samples, do not change
-MAX_SAMPLES_TO_USE = 20000  # can be changed
+MAX_SAMPLES_TO_USE = 40000  # can be changed
 MAX_SAMPLES_PER_RATING = 4500 # can be set to up to 4002, after which default value is 4002
 
 assert (MAX_SAMPLES_TO_USE <= MAX_SAMPLES)
@@ -103,7 +101,7 @@ def evaluate(y_test, y_predicted, results):
                           average=METRICS_CHOICE)  # true positives /(true positives + false negatives)
     f1 = f1_score(y_test, y_predicted, pos_label=None, average=METRICS_CHOICE)
     accuracy = accuracy_score(y_test, y_predicted)  # num of correct predictions/ total num of predictions
-    #print "accuracy = %.3f, precision = %.3f, recall = %.3f, f1 = %.3f" % (accuracy, precision, recall, f1)
+    print "accuracy = %.3f, precision = %.3f, recall = %.3f, f1 = %.3f" % (accuracy, precision, recall, f1)
     results['accuracy'].append(accuracy)
     results['precision'].append(precision)
     results['recall'].append(recall)
@@ -126,99 +124,65 @@ def main():
     data, features = transform_data(data)  # get BOW representation
     print data.shape
 
-    skf = StratifiedKFold(n_splits=N_FOLDS)
     results = {'accuracy': [], 'precision': [], 'recall': [], 'f1': []}
     results_random = {'accuracy': [], 'precision': [], 'recall': [], 'f1': []}
 
     X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.1)
-    print X_train.shape, X_test.shape, y_train.shape, y_test.shape
+    print "Train data shape ", X_train.shape
+    print "Test data shape ", X_test.shape
+    print "Train labels shape ", y_train.shape
+    print "Test labels shape ", y_test.shape
 
     # Fitting a multinomial Naive Bayes classifer
+    print " ===== Multinomia Naive Bayes ====="
     gnb = gnb.fit(X_train, y_train)
     y_predicted = gnb.predict(X_test)
-    print gnb.score(X_test, y_test)
+    print "Score = ", gnb.score(X_test, y_test)
     results = evaluate(y_test, y_predicted, results)
-    print results
+    #print results
 
     # Fitting a SVM classifier
     #clf = svm.SVC(kernel="linear", gamma=1.0)
     #param_grid = {'C': [1e3, 5e3, 1e4, 5e4, 1e5], 'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1]}
     #clf = GridSearchCV(svm.SVC(kernel='rbf', class_weight='balanced'), param_grid)
+    # print " ===== SVM ====="
     # clf = svm.SVC(C=1000.0, kernel="rbf")
     # clf = clf.fit(X_train, y_train)
     # y_pred = clf.predict(X_test)
-    # print clf.score(X_test, y_test)
+    # print "Score = ", clf.score(X_test, y_test)
     # results = evaluate(y_test, y_pred, results)
-    # print results
 
     # Fitting a k-Nearest Neighbors classifier
+    print " ===== KNN ====="
     clf = KNeighborsClassifier(n_neighbors=10, algorithm='auto')
     clf = clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
-    print clf.score(X_test, y_test)
+    print "Score = ", clf.score(X_test, y_test)
     results = evaluate(y_test, y_pred, results)
-    print results
 
     # Fitting a Decision Tree classifier
+    print " ===== Decision Tree ====="
     clf = tree.DecisionTreeClassifier(min_samples_split=50)
     clf = clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
-    print clf.score(X_test, y_test)
+    print "Score = ",  clf.score(X_test, y_test)
     important_indices = [np.where(clf.feature_importances_ == feature) for feature in clf.feature_importances_ if feature > 0.02]
     print important_indices
     print [features[index[0][0]] for index in important_indices]
     results = evaluate(y_test, y_pred, results)
-    print results
 
-    #print "\n=====================Total average results==================="
-    #for key in results:
-        #print key, results[key]
-        #print key + " = %.3f" % results[key][0]
 
-    # for train, test in skf.split(data, labels):
-    #     X_train, X_test = data[train], data[test]
-    #     y_train, y_test = labels[train], labels[test]
-    #     #print train, test
-    #     #print "Data:", X_train.shape, X_test.shape
-    #     #print "labels:", y_train.shape, y_test.shape
-    #
-    #     gnb = gnb.fit(X_train, y_train)
-    #     #print gnb.class_count_.shape, gnb.feature_count_.shape
-    #     #print gnb.class_count_
-    #     y_predicted = gnb.predict(X_test)
-    #
-    #     results = evaluate(y_test, y_predicted, results)
-    #
-    #     if COMPARE_WITH_RANDOM:
-    #         counter = Counter(y_train)
-    #         prob_weigths = [counter[i] * 1. / len(y_train) for i in xrange(1, 6)]
-    #         y_predicted = [np.random.choice(xrange(1, 6), size=1, replace=False, p=prob_weigths) for i in xrange(len(y_test))]
-    #         #print "-------------Random picker results:------------------"
-    #         results_random = evaluate(y_test, y_predicted, results_random)
-    #         #print
-    #
-    # print "\n=====================Total average results==================="
-    # for key in results:
-    #     print key + " = %.3f," % (sum(results[key]) / N_FOLDS),
-    #
-    # if COMPARE_WITH_RANDOM:
-    #     print
-    #     #print "=====================Total average for random ==================="
-    #     #for key in results:
-    #         #print key + " = %.3f," % (sum(results_random[key]) / N_FOLDS),
+
+    if COMPARE_WITH_RANDOM:
+        print " ===== Random ====="
+        counter = Counter(y_train)
+        prob_weigths = [counter[i] * 1. / len(y_train) for i in xrange(1, 6)]
+        y_predicted = [np.random.choice(xrange(1, 6), size=1, replace=False, p=prob_weigths) for i in xrange(len(y_test))]
+        results_random = evaluate(y_test, y_predicted, results_random)
+
+    
 
 
 if __name__ == "__main__":
     main()
     
-#     Current Performance (with get_random_samples)
-#     =====================Total average results===================
-#     f1 = 0.601, recall = 0.618, precision = 0.597, accuracy = 0.618,
-#     =====================Total average for random ===================
-#     f1 = 0.317, recall = 0.317, precision = 0.317, accuracy = 0.317,
-    
-#     Current Performance (with get_random_samples_strictly_uniform)
-    # =====================Total average results===================
-    # f1 = 0.528, recall = 0.530, precision = 0.527, accuracy = 0.530,
-    # =====================Total average for random ===================
-    # f1 = 0.203, recall = 0.203, precision = 0.203, accuracy = 0.203,
