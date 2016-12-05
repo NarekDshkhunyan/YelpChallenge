@@ -155,13 +155,13 @@ if __name__ == "__main__":
     vocabulary, vocabulary_inv = build_vocab(sentences)
     print "Vocabulary size: "+str(len(vocabulary))
     
-    word2vec = vocab_to_word2vec(googlenews_file, vocabulary)
+    #word2vec = vocab_to_word2vec(googlenews_file, vocabulary)
 
-    embedding_mat = build_word_embedding_mat(word2vec, vocabulary_inv) #i-th row corresponds to i-th word in vocab
+    #embedding_mat = build_word_embedding_mat(word2vec, vocabulary_inv) #i-th row corresponds to i-th word in vocab
 
-    x, y = build_input_data(sentences, labels, vocabulary) #for each sentences, convert list of tokes to the list of indices in vocab
-    cPickle.dump([x, y, embedding_mat], open('train_mat_filtered1.pkl', 'wb'))
-    cPickle.dump(word2vec, open('word2vec1.pkl', 'wb'))
+    #x, y = build_input_data(sentences, labels, vocabulary) #for each sentences, convert list of tokes to the list of indices in vocab
+    #cPickle.dump([x, y, embedding_mat], open('train_mat_filtered1.pkl', 'wb'))
+    #cPickle.dump(word2vec, open('word2vec1.pkl', 'wb'))
     cPickle.dump(vocabulary, open('vocab_filtered1.pkl', 'wb'))
     cPickle.dump(vocabulary_inv, open('vocab_inv_filtered1.pkl', 'wb'))
     print "Data created"

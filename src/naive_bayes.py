@@ -10,6 +10,7 @@ from sklearn import tree
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
+from spellchecker import correction
 
 import cPickle
 import numpy as np
@@ -43,6 +44,12 @@ with open(vocab_inv_file) as f:
 
 vocab_size = len(vocabulary)
 print "vocabulary size = ", vocab_size
+
+# vocab = {}
+# for key in vocabulary.keys():
+#     vocab[correction(key)] = vocabulary[key]
+# vocabulary = vocab
+# print len(vocabulary)
 
 
 def transform_data(data):
@@ -111,7 +118,6 @@ def main():
     data = np.array(data)
     labels = np.array(labels)
     print data.shape, labels.shape
-    #print data[0:10], labels[0:10]
     counter = Counter(labels)
 
     #data, labels = get_random_samples_strictly_uniform(data, labels)
@@ -138,12 +144,12 @@ def main():
     #clf = svm.SVC(kernel="linear", gamma=1.0)
     #param_grid = {'C': [1e3, 5e3, 1e4, 5e4, 1e5], 'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1]}
     #clf = GridSearchCV(svm.SVC(kernel='rbf', class_weight='balanced'), param_grid)
-    clf = svm.SVC(C=1000.0, kernel="rbf")
-    clf = clf.fit(X_train, y_train)
-    y_pred = clf.predict(X_test)
-    print clf.score(X_test, y_test)
-    results = evaluate(y_test, y_pred, results)
-    print results
+    # clf = svm.SVC(C=1000.0, kernel="rbf")
+    # clf = clf.fit(X_train, y_train)
+    # y_pred = clf.predict(X_test)
+    # print clf.score(X_test, y_test)
+    # results = evaluate(y_test, y_pred, results)
+    # print results
 
     # Fitting a k-Nearest Neighbors classifier
     clf = KNeighborsClassifier(n_neighbors=10, algorithm='auto')
@@ -160,7 +166,7 @@ def main():
     print clf.score(X_test, y_test)
     important_indices = [np.where(clf.feature_importances_ == feature) for feature in clf.feature_importances_ if feature > 0.02]
     print important_indices
-    print [features[index[0][0]] for index in important_indices]         #
+    print [features[index[0][0]] for index in important_indices]
     results = evaluate(y_test, y_pred, results)
     print results
 
