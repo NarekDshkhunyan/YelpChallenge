@@ -9,6 +9,8 @@ from sklearn import tree
 
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+
 import cPickle
 import numpy as np
 import random
@@ -28,7 +30,7 @@ METRICS_CHOICE = 'weighted'  # computes global precision, recall and f1 (not sam
 # http://stats.stackexchange.com/questions/99694/what-does-it-imply-if-accuracy-and-recall-are-the-same
 
 MAX_SAMPLES = 65323  # maximum number of available samples, do not change
-MAX_SAMPLES_TO_USE = 10000  # can be changed
+MAX_SAMPLES_TO_USE = 20000  # can be changed
 MAX_SAMPLES_PER_RATING = 4500 # can be set to up to 4002, after which default value is 4002
 
 assert (MAX_SAMPLES_TO_USE <= MAX_SAMPLES)
@@ -48,11 +50,16 @@ def transform_data(data):
         data[i] = [vocabulary_inv[el] for el in data[i]]
         data[i] = " ".join(data[i])
 
-    vect = CountVectorizer(tokenizer=lambda x: x.rsplit())  # to match the original tokenizer from word2vec.py
+    #vect = CountVectorizer(tokenizer=lambda x: x.rsplit())  # to match the original tokenizer from word2vec.py
+    vect = CountVectorizer(tokenizer=lambda x: x.rsplit(), ngram_range=(1,2), analyzer='word')
+    #vect = TfidfVectorizer(tokenizer=lambda x: x.rsplit(), ngram_range=(1,2))
     vect = vect.fit(vocabulary.keys())
-    data = vect.transform(data)
+    data = vect.fit_transform(data)
+    features = vect.get_feature_names()
+    print "Total # of features:", len(features)
+    print features[1000:1100]
 
-    return data
+    return data, features
 
 
 def load_data():
@@ -99,7 +106,6 @@ def evaluate(y_test, y_predicted, results):
 
 def main():
     gnb = MultinomialNB()
-    gauss = GaussianNB()
 
     data, labels = load_data()
     data = np.array(data)
@@ -108,9 +114,10 @@ def main():
     #print data[0:10], labels[0:10]
     counter = Counter(labels)
 
-    data, labels = get_random_samples_strictly_uniform(data, labels)
+    #data, labels = get_random_samples_strictly_uniform(data, labels)
+    data, labels = get_random_samples(data, labels)
     print "Loaded ", len(data), " samples and ", len(labels), " labels."
-    data = transform_data(data)  # get BOW representation
+    data, features = transform_data(data)  # get BOW representation
     print data.shape
 
     skf = StratifiedKFold(n_splits=N_FOLDS)
@@ -120,32 +127,25 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.1)
     print X_train.shape, X_test.shape, y_train.shape, y_test.shape
 
+    # Fitting a multinomial Naive Bayes classifer
     gnb = gnb.fit(X_train, y_train)
     y_predicted = gnb.predict(X_test)
     print gnb.score(X_test, y_test)
     results = evaluate(y_test, y_predicted, results)
     print results
 
-    # gauss = gauss.fit(X_train.toarray(), y_train)
-    # y_predicted = gauss.predict(X_test.toarray())
-    # print gauss.score(X_test.toarray(), y_test)
-    # results = evaluate(y_test, y_predicted, results)
-    # print results
-
-    clf = svm.SVC(kernel="linear", gamma=1.0)
-    # param_grid = {
-    #      'C': [1e3, 5e3, 1e4, 5e4, 1e5],
-    #       'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1],
-    #       }
+    # Fitting a SVM classifier
+    #clf = svm.SVC(kernel="linear", gamma=1.0)
+    #param_grid = {'C': [1e3, 5e3, 1e4, 5e4, 1e5], 'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1]}
     #clf = GridSearchCV(svm.SVC(kernel='rbf', class_weight='balanced'), param_grid)
-    #clf = svm.SVC(C=1000.0, kernel="rbf")
+    clf = svm.SVC(C=1000.0, kernel="rbf")
     clf = clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     print clf.score(X_test, y_test)
-    #print [np.where(clf.feature_importances_ == feature) for feature in clf.feature_importances_ if feature > 0.05]
     results = evaluate(y_test, y_pred, results)
     print results
 
+    # Fitting a k-Nearest Neighbors classifier
     clf = KNeighborsClassifier(n_neighbors=10, algorithm='auto')
     clf = clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
@@ -153,12 +153,14 @@ def main():
     results = evaluate(y_test, y_pred, results)
     print results
 
+    # Fitting a Decision Tree classifier
     clf = tree.DecisionTreeClassifier(min_samples_split=50)
     clf = clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     print clf.score(X_test, y_test)
-    print [np.where(clf.feature_importances_ == feature) for feature in clf.feature_importances_ if feature > 0.02]
-    print vocabulary_inv[538], vocabulary_inv[1505], vocabulary_inv[2247], vocabulary_inv[6931], vocabulary_inv[9341], vocabulary_inv[10718]
+    important_indices = [np.where(clf.feature_importances_ == feature) for feature in clf.feature_importances_ if feature > 0.02]
+    print important_indices
+    print [features[index[0][0]] for index in important_indices]         #
     results = evaluate(y_test, y_pred, results)
     print results
 
