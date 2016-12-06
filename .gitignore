@@ -1,6 +1,7 @@
 #ignores the yelp_data folder
 yelp_data
 google_data
+word_file
 *.pyc
 *.pkl
 report_template/*.log
