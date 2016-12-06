@@ -224,8 +224,6 @@ def dynamicRNN(x, seqlen, weights, biases):
         print(outputs[0].get_shape().as_list())
         print(outputs[10].get_shape().as_list()), '\n'
 
-        #print(len(outputs))
-
         # Hack to build the indexing and retrieve the right output.
         batch_size = tf.shape(outputs)[0]
         print(batch_size)
@@ -258,7 +256,6 @@ def dynamicRNN(x, seqlen, weights, biases):
 
         print("Before transpose")
         print(len(outputs))
-        #print(outputs[0].get_shape().as_list())
         print(len(outputs[0]))
         print(outputs[0][1].get_shape().as_list())
         print(outputs[0][2].get_shape().as_list())
@@ -267,7 +264,6 @@ def dynamicRNN(x, seqlen, weights, biases):
         outputs = tf.transpose(outputs, [1, 0, 2])
 
         print("After transpose")
-        #print(outputs[0].get_shape().as_list())
         print(outputs[0][1].get_shape().as_list())
         print(outputs[0][2].get_shape().as_list())
 
@@ -278,7 +274,6 @@ def dynamicRNN(x, seqlen, weights, biases):
         outputs = tf.gather(tf.reshape(outputs, [-1, 2*N_HIDDEN]), index)
 
         print("After reshape")
-        #print(outputs[0].get_shape().as_list())
         print(outputs[0].get_shape().as_list())
         print(outputs[0].get_shape().as_list())
 
@@ -299,7 +294,8 @@ correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(y,1))
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
 # Initializing the variables
-init = tf.global_variables_initializer()
+#init = tf.global_variables_initializer()
+init = tf.initialize_all_variables()
 
 # Launch the graph
 with tf.Session() as sess:

@@ -1,7 +1,5 @@
 import numpy as np
-import itertools
-from collections import Counter
-import cPickle
+from spellchecker import correction, valid
 import json 
 from nltk.tokenize import RegexpTokenizer
 import time
@@ -14,28 +12,46 @@ def tokenize(text):
     return [word.lower() for word in tokenizer.tokenize(text)]
 
 
-def filter_data(source_file, target_file, valid_words):
+def filter_data(source_file, target_file, google_words):
     filtered_reviews = []
     with open(source_file, 'r') as f:
+        not_valid_words = []
+        valid_words = []
         for line in f:
+            valid_word, not_valid = 0, 0
             review = json.loads(line)
             try:
                 filtered_review = {}
                 txt = str(review["text"])
                 tokenized = tokenize(txt)
-                valid = True
+                inGoogleNews = True
+                #print tokenized
+                #print review["text"]
                 for word in tokenized:
-                    if word not in valid_words:
-                        valid = False
+                    #print word
+                    if word not in google_words:
+                        inGoogleNews = False
                         break
-                if valid:
 
+                    if not valid(word):          # 2.5M words were flagged, out out 18.5M total
+                        not_valid += 1
+                    elif valid(word):
+                        valid_word += 1
+
+                print "stars:", review["stars"]
+                print not_valid, '\n'
+                not_valid_words.append(not_valid)
+                valid_words.append(valid_word)
+
+                if inGoogleNews:
                     filtered_review["stars"] = review["stars"]
                     filtered_review["text"] = review["text"]
                     filtered_review["review_id"] = review["review_id"]
                     filtered_reviews.append(filtered_review)
             except:
                 continue
+        print "Not valid words:", sum(not_valid_words)
+        print "Valid words:", sum(valid_words)
     with open(target_file, 'w') as outfile:
         json.dump(filtered_reviews, outfile)
     print len(filtered_reviews)
@@ -64,14 +80,13 @@ def extract_words(filename):
     
 
 
-
 if __name__ == "__main__":
+    start = time.time()
     print "starting..."
     source_file = "../yelp_data/yelp_academic_dataset_review.json"
-    # source_file = "../yelp_data/mock_reviews.json"
-    target_file = "../yelp_data/yelp_academic_dataset_review_filtered.json"
+    target_file = "../yelp_data/big_yelp_academic_dataset_review_filtered.json"
     googlenews_file = "../google_data/GoogleNews-vectors-negative300.bin"
-    # unidentified_words = "./misc/unidentified_words.txt"
 
     googleWords = extract_words(googlenews_file)
     filter_data(source_file, target_file, googleWords) # sentences - list of list of tokens (words), labels - list of floats
+    print time.time() - start

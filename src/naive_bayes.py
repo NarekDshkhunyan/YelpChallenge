@@ -29,7 +29,7 @@ METRICS_CHOICE = 'weighted'  # computes global precision, recall and f1 (not sam
 # http://stats.stackexchange.com/questions/99694/what-does-it-imply-if-accuracy-and-recall-are-the-same
 
 MAX_SAMPLES = 65323  # maximum number of available samples, do not change
-MAX_SAMPLES_TO_USE = 40000  # can be changed
+MAX_SAMPLES_TO_USE = 10000  # can be changed
 MAX_SAMPLES_PER_RATING = 4500 # can be set to up to 4002, after which default value is 4002
 
 assert (MAX_SAMPLES_TO_USE <= MAX_SAMPLES)
@@ -62,7 +62,7 @@ def transform_data(data):
     data = vect.fit_transform(data)
     features = vect.get_feature_names()
     print "Total # of features:", len(features)
-    print features[1000:1100]
+    print features[500:700]
 
     return data, features
 
@@ -101,7 +101,7 @@ def evaluate(y_test, y_predicted, results):
                           average=METRICS_CHOICE)  # true positives /(true positives + false negatives)
     f1 = f1_score(y_test, y_predicted, pos_label=None, average=METRICS_CHOICE)
     accuracy = accuracy_score(y_test, y_predicted)  # num of correct predictions/ total num of predictions
-    print "accuracy = %.3f, precision = %.3f, recall = %.3f, f1 = %.3f" % (accuracy, precision, recall, f1)
+    print "accuracy = %.3f, precision = %.3f, recall = %.3f, f1 = %.3f" % (accuracy, precision, recall, f1), '\n'
     results['accuracy'].append(accuracy)
     results['precision'].append(precision)
     results['recall'].append(recall)
@@ -110,7 +110,6 @@ def evaluate(y_test, y_predicted, results):
 
 
 def main():
-    gnb = MultinomialNB()
 
     data, labels = load_data()
     data = np.array(data)
@@ -131,10 +130,11 @@ def main():
     print "Train data shape ", X_train.shape
     print "Test data shape ", X_test.shape
     print "Train labels shape ", y_train.shape
-    print "Test labels shape ", y_test.shape
+    print "Test labels shape ", y_test.shape, '\n'
 
     # Fitting a multinomial Naive Bayes classifer
     print " ===== Multinomia Naive Bayes ====="
+    gnb = MultinomialNB()
     gnb = gnb.fit(X_train, y_train)
     y_predicted = gnb.predict(X_test)
     print "Score = ", gnb.score(X_test, y_test)

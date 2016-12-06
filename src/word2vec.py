@@ -35,16 +35,20 @@ def load_data(source_file):
     stars = []
     with open(source_file, 'r') as f:
         for line in f:
-            review = json.loads(line)
-            try:
-                txt = str(review["text"])
-                txt = tokenize(txt)
-                txts.append(txt)
-                stars.append(review["stars"])
-                if len(stars)%1000== 0 and len(stars)!=0:
-                    print "loaded ", len(stars)," reviews."
-            except:
-                continue
+            print len(line)
+            all_reviews = json.loads(line)    # the entire json is just one giant line - that doesnt; make any sense
+            print len(all_reviews)
+            for review in all_reviews:
+                #print review
+                try:
+                    txt = str(review["text"])
+                    txt = tokenize(txt)
+                    txts.append(txt)
+                    stars.append(review["stars"])
+                    if len(stars)%100000 == 0 and len(stars)!=0:
+                        print "loaded ", len(stars)," reviews."
+                except:
+                    continue
             
     return (txts, stars)
 
@@ -58,6 +62,7 @@ def build_vocab(sentences):
     vocabulary_inv = [x[0] for x in word_counts.most_common()]
     # Mapping from word to index
     vocabulary = {x: i for i, x in enumerate(vocabulary_inv)}
+    print len(vocabulary), len(vocabulary_inv)
     return [vocabulary, vocabulary_inv]
 
 def vocab_to_word2vec(filename, vocab, k=300):
@@ -78,6 +83,7 @@ def vocab_to_word2vec(filename, vocab, k=300):
                     break
                 if ch != '\n':
                     word.append(ch)
+            word = word.lower()
             if word in vocab:
                 word_vecs[word] = np.fromstring(f.read(binary_len), dtype='float32')
             else:
@@ -144,7 +150,7 @@ if __name__ == "__main__":
     print "starting..."
     start_time = time.time()
     #source_file = "../yelp_data/yelp_academic_dataset_review.json"
-    source_file = "../yelp_data/new_reviews.json" #pre-filtered reviews
+    source_file = "../yelp_data/yelp_academic_dataset_review_filtered.json" #pre-filtered reviews
     googlenews_file = "../google_data/GoogleNews-vectors-negative300.bin"
     unidentified_words = "./misc/unidentified_words.txt"
 
@@ -155,14 +161,18 @@ if __name__ == "__main__":
     vocabulary, vocabulary_inv = build_vocab(sentences)
     print "Vocabulary size: "+str(len(vocabulary))
     
-    #word2vec = vocab_to_word2vec(googlenews_file, vocabulary)
+    start_time = time.time()
+    word2vec = vocab_to_word2vec(googlenews_file, vocabulary)
 
-    #embedding_mat = build_word_embedding_mat(word2vec, vocabulary_inv) #i-th row corresponds to i-th word in vocab
+    embedding_mat = build_word_embedding_mat(word2vec, vocabulary_inv) #i-th row corresponds to i-th word in vocab
 
-    #x, y = build_input_data(sentences, labels, vocabulary) #for each sentences, convert list of tokes to the list of indices in vocab
-    #cPickle.dump([x, y, embedding_mat], open('train_mat_filtered1.pkl', 'wb'))
-    #cPickle.dump(word2vec, open('word2vec1.pkl', 'wb'))
-    cPickle.dump(vocabulary, open('vocab_filtered1.pkl', 'wb'))
-    cPickle.dump(vocabulary_inv, open('vocab_inv_filtered1.pkl', 'wb'))
+    x, y = build_input_data(sentences, labels, vocabulary)      #for each sentences, convert list of tokes to the list of indices in vocab
+    print "Time elapsed: ", time.time()-start_time, " seconds."
+
+    start_time = time.time()
+    cPickle.dump([x, y, embedding_mat], open('train_mat_filtered_big.pkl', 'wb'))
+    cPickle.dump(word2vec, open('word2vec_big.pkl', 'wb'))
+    cPickle.dump(vocabulary, open('vocab_filtered_big.pkl', 'wb'))
+    cPickle.dump(vocabulary_inv, open('vocab_inv_filtered_big.pkl', 'wb'))
     print "Data created"
     print "Time elapsed: ", time.time()-start_time, " seconds."
