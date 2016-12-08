@@ -54,7 +54,7 @@ def filter_data(source_file, target_file, google_words):
         print "Valid words:", sum(valid_words)
     with open(target_file, 'w') as outfile:
         for r in filtered_reviews:
-            outfile.write(json.dumps(filtered_reviews)+"\n")#to make sure each json is each line
+            outfile.write(json.dumps(r)+"\n")#to make sure each json is each line
     print len(filtered_reviews)
     return
 
