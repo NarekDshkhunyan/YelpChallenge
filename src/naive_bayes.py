@@ -2,7 +2,7 @@
 from sklearn.model_selection import train_test_split
 
 from sklearn.naive_bayes import MultinomialNB, GaussianNB
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 from sklearn import svm, tree
 from sklearn.neighbors import NearestNeighbors, RadiusNeighborsClassifier, KNeighborsClassifier
 
