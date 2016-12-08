@@ -1,8 +1,10 @@
 import numpy as np
-from spellchecker import correction, valid
 import json 
 from nltk.tokenize import RegexpTokenizer
 import time
+
+# Spellcheck currently unused
+# from spellchecker import correction, valid 
 
 tokenizer = RegexpTokenizer(r'\w+')
 
@@ -29,7 +31,9 @@ def filter_data(source_file, target_file, google_words):
                 #print review["text"]
                 for word in tokenized:
                     #print word
-                    if word not in google_words:
+                    if word not in google_words: # so we break out and stop looking at words as from the first
+                                                 # instance of an invalid word? (might be other invalid words,
+                                                 # but if we do not care for them then ok.
                         inGoogleNews = False
                         break
 
@@ -54,9 +58,9 @@ def filter_data(source_file, target_file, google_words):
         print "Valid words:", sum(valid_words)
     with open(target_file, 'w') as outfile:
         for r in filtered_reviews:
-            outfile.write(json.dumps(r)+"\n")#to make sure each json is each line
+            outfile.write(json.dumps(r)) # to make sure each json is each line
+            outfile.write("\n") #faster (no string concat)
     print len(filtered_reviews)
-    return
 
 
 
@@ -87,7 +91,8 @@ if __name__ == "__main__":
     source_file = "../yelp_data/yelp_academic_dataset_review.json"
     target_file = "../yelp_data/big_yelp_academic_dataset_review_filtered.json"
     googlenews_file = "../google_data/GoogleNews-vectors-negative300.bin"
-
+    print "about to load google news, time elapsed: ", time.time() - start
     googleWords = extract_words(googlenews_file)
+    print "about to start filtering reviews, time elapsed: ", time.time() - start
     filter_data(source_file, target_file, googleWords) # sentences - list of list of tokens (words), labels - list of floats
     print time.time() - start
