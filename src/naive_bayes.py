@@ -2,7 +2,7 @@
 from sklearn.model_selection import train_test_split
 
 from sklearn.naive_bayes import MultinomialNB, GaussianNB
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 from sklearn import svm, tree
 from sklearn.neighbors import NearestNeighbors, RadiusNeighborsClassifier, KNeighborsClassifier
 
@@ -17,23 +17,22 @@ from collections import Counter
 
 import time
 
-data_file = "train_mat_filtered_big.pkl"
-vocab_file = "vocab_filtered_big.pkl"
-vocab_inv_file = "vocab_inv_filtered_big.pkl"
+data_file = "./Pickles/train_mat_filtered_big.pkl"
+vocab_file = "./Pickles/vocab_filtered_big.pkl"
+vocab_inv_file = "./Pickles/vocab_inv_filtered_big.pkl"
 
 # PARAMETERS
-N_FOLDS = 10  # 10% for test, 90% for train
-COMPARE_WITH_RANDOM = True
+COMPARE_WITH_RANDOM = False
 METRICS_CHOICE = 'weighted'  # computes global precision, recall and f1 (not sample or label wise)
 # TODO: ask which one is better: 'micro' or 'weighted'
 
 # Note: 'micro' causes recall and precision to be the same
 # http://stats.stackexchange.com/questions/99694/what-does-it-imply-if-accuracy-and-recall-are-the-same
 
-#MAX_SAMPLES = 65323             # maximum number of available samples, do not change
 MAX_SAMPLES = 1594893           # whole Yelp dataset after filtering, only relevant if using _big pcikle files
-MAX_SAMPLES_TO_USE = 100000      # can be changed
-MAX_SAMPLES_PER_RATING = 4500   # can be set to up to 4002, after which default value is 4002
+MAX_SAMPLES_TO_USE = 1000000      # can be changed
+TEST_SAMPLES_PERCENTAGE = 0.1
+MAX_SAMPLES_PER_RATING = 150688   # can be set to up to 4002, after which default value is 4002
 
 assert (MAX_SAMPLES_TO_USE <= MAX_SAMPLES)
 
@@ -60,7 +59,7 @@ def transform_data(data):
 
     #vect = CountVectorizer(tokenizer=lambda x: x.rsplit())  # to match the original tokenizer from word2vec.py
     vect = CountVectorizer(tokenizer=lambda x: x.rsplit(), ngram_range=(1,2), analyzer='word')
-    #vect = TfidfVectorizer(tokenizer=lambda x: x.rsplit(), ngram_range=(1,2))
+    #vect = TfidfVectorizer(tokenizer=lambda x: x.rsplit(), ngram_range=(1,1))
     vect = vect.fit(vocabulary.keys())
     data = vect.fit_transform(data)
     features = vect.get_feature_names()
@@ -109,7 +108,7 @@ def evaluate(y_test, y_predicted, results):
     results['precision'].append(precision)
     results['recall'].append(recall)
     results['f1'].append(f1)
-    return results
+    #return results
 
 
 def main():
@@ -124,12 +123,11 @@ def main():
     data, labels = get_random_samples(data, labels)
     print "Loaded ", len(data), " samples and ", len(labels), " labels."
     data, features = transform_data(data)  # get BOW representation
-    print data.shape
 
     results = {'accuracy': [], 'precision': [], 'recall': [], 'f1': []}
     results_random = {'accuracy': [], 'precision': [], 'recall': [], 'f1': []}
 
-    X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.1)
+    X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=TEST_SAMPLES_PERCENTAGE)
     print "Train data shape ", X_train.shape
     print "Test data shape ", X_test.shape
     print "Train labels shape ", y_train.shape
@@ -141,7 +139,7 @@ def main():
     gnb = MultinomialNB()
     gnb = gnb.fit(X_train, y_train)
     y_predicted = gnb.predict(X_test)
-    print "Score = ", gnb.score(X_test, y_test)
+    #print "Score = ", gnb.score(X_test, y_test)
     results = evaluate(y_test, y_predicted, results)
     print "Time elapsed:", time.time() - start, '\n'
     #print results
@@ -168,17 +166,17 @@ def main():
     # print "Time elapsed:", time.time() - start, '\n'
 
     # Fitting a Decision Tree classifier
-    print " ===== Decision Tree ====="
-    start = time.time()
-    clf = tree.DecisionTreeClassifier(min_samples_split=50)
-    clf = clf.fit(X_train, y_train)
-    y_pred = clf.predict(X_test)
-    print "Score = ",  clf.score(X_test, y_test)
-    important_indices = [np.where(clf.feature_importances_ == feature) for feature in clf.feature_importances_ if feature > 0.02]
-    print important_indices
-    print [features[index[0][0]] for index in important_indices]
-    results = evaluate(y_test, y_pred, results)
-    print "Time elapsed:", time.time() - start, '\n'
+    # print " ===== Decision Tree ====="
+    # start = time.time()
+    # clf = tree.DecisionTreeClassifier(min_samples_split=50)
+    # clf = clf.fit(X_train, y_train)
+    # y_pred = clf.predict(X_test)
+    # #print "Score = ",  clf.score(X_test, y_test)
+    # important_indices = [np.where(clf.feature_importances_ == feature) for feature in clf.feature_importances_ if feature > 0.02]
+    # #print important_indices
+    # #print [features[index[0][0]] for index in important_indices]
+    # results = evaluate(y_test, y_pred, results)
+    # print "Time elapsed:", time.time() - start, '\n'
 
 
 

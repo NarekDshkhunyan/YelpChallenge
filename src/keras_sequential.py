@@ -21,9 +21,9 @@ https://github.com/fchollet/keras/issues/853
 How to make a multiclass classifier:
 http://machinelearningmastery.com/multi-class-classification-tutorial-keras-deep-learning-library/
 '''
-data_file = "train_mat_filtered.pkl"
-vocab_file = "vocab_filtered.pkl"
-vocab_inv_file = "vocab_inv_filtered.pkl"
+data_file = "./Pickles/train_mat_filtered.pkl"
+vocab_file = "./Pickles/vocab_filtered.pkl"
+vocab_inv_file = "./Pickles/vocab_inv_filtered.pkl"
 
 # PARAMETERS
 N_FOLDS = 10  # 10% for test, 90% for train

@@ -9,3 +9,4 @@ report_template/*.log
 report_template/*.out
 report_template/*.aux
 report_template/*.gz
+src/Pickles/*

@@ -13,3 +13,12 @@ sentences
 	25th percentile:: 3
 	50th percentile:: 6
 	75th percentile:: 10
+
+After filtering (as from 12/08/2016)
+Total number of samples: 1594893
+Label distribution:
+1 star 150688 ~9%
+2 stars 110832 ~7%
+3 stars 176349 ~11%
+4 stars 401477 ~25%
+5 stars 755547 ~47%

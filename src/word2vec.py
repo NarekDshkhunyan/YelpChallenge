@@ -146,7 +146,7 @@ if __name__ == "__main__":
     print "starting..."
     start_time = time.time()
     #source_file = "../yelp_data/yelp_academic_dataset_review.json"
-    source_file = "../yelp_data/yelp_academic_dataset_review_filtered.json" #pre-filtered reviews
+    source_file = "../yelp_data/yelp_academic_dataset_review_filtered.json" #pre-filtered reviews #need to resupply this
     googlenews_file = "../google_data/GoogleNews-vectors-negative300.bin"
     unidentified_words = "./misc/unidentified_words.txt"
 
@@ -166,9 +166,9 @@ if __name__ == "__main__":
     print "Time elapsed: ", time.time()-start_time, " seconds."
 
     start_time = time.time()
-    cPickle.dump([x, y, embedding_mat], open('train_mat_filtered_big.pkl', 'wb'))
-    cPickle.dump(word2vec, open('word2vec_big.pkl', 'wb'))
-    cPickle.dump(vocabulary, open('vocab_filtered_big.pkl', 'wb'))
-    cPickle.dump(vocabulary_inv, open('vocab_inv_filtered_big.pkl', 'wb'))
+    cPickle.dump([x, y, embedding_mat], open('Pickles/train_mat_filtered_big.pkl', 'wb'))
+    cPickle.dump(word2vec, open('Pickles/word2vec_big.pkl', 'wb'))
+    cPickle.dump(vocabulary, open('Pickles/vocab_filtered_big.pkl', 'wb'))
+    cPickle.dump(vocabulary_inv, open('Pickles/vocab_inv_filtered_big.pkl', 'wb'))
     print "Data created"
     print "Time elapsed: ", time.time()-start_time, " seconds."
