@@ -32,7 +32,7 @@ METRICS_CHOICE = 'weighted'  # computes global precision, recall and f1 (not sam
 MAX_SAMPLES = 1594893           # whole Yelp dataset after filtering, only relevant if using _big pcikle files
 MAX_SAMPLES_TO_USE = 1000000      # can be changed
 TEST_SAMPLES_PERCENTAGE = 0.1
-MAX_SAMPLES_PER_RATING = 15068   # can be set to up to 4002, after which default value is 4002
+MAX_SAMPLES_PER_RATING = 150688   # can be set to up to 4002, after which default value is 4002
 
 assert (MAX_SAMPLES_TO_USE <= MAX_SAMPLES)
 
