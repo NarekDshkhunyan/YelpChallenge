@@ -17,9 +17,9 @@ from collections import Counter
 
 import time
 
-data_file = "train_mat_filtered_big.pkl"
-vocab_file = "vocab_filtered_big.pkl"
-vocab_inv_file = "vocab_inv_filtered_big.pkl"
+data_file = "./train_mat_filtered_big.pkl"
+vocab_file = "./vocab_filtered_big.pkl"
+vocab_inv_file = "./vocab_inv_filtered_big.pkl"
 
 # PARAMETERS
 COMPARE_WITH_RANDOM = False

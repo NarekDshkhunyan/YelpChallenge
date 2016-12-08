@@ -22,3 +22,6 @@ y <br />
 embedding_matrix <br />
 =2d array with shape (vocab_size, 300), where each row i - word2vec representation 
 of word i from vocabulary;
+
+
+Please create a folder at: src/Pickles and move all the pkl files in there!

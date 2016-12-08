@@ -2,9 +2,7 @@ import numpy as np
 import json 
 from nltk.tokenize import RegexpTokenizer
 import time
-
-# Spellcheck currently unused
-# from spellchecker import correction, valid 
+from spellchecker import valid # Correction currently unused
 
 tokenizer = RegexpTokenizer(r'\w+')
 

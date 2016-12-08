@@ -9,7 +9,7 @@ from collections import Counter
 import cPickle
 import numpy as np
 
-data_dir = "./"
+data_dir = "./Pickles"
 data_file = "train_mat_filtered.pkl"
 RUN_BIDIRECTIONAL = True
 
