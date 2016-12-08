@@ -9,17 +9,17 @@ from collections import Counter
 import cPickle
 import numpy as np
 
-#data_dir = "/Users/danamukusheva/Desktop/6.864/project/6.864_project/src"
 data_dir = "./"
 data_file = "train_mat_filtered.pkl"
 RUN_BIDIRECTIONAL = True
 
-MAX_SAMPLES = 65323 # maximum number of available samples, do not change
-TRAIN_SET_SIZE = 30000 # these do not matter if using get_random_samples_strictly_uniform
+MAX_SAMPLES = 65323             # maximum number of available samples, do not change
+#MAX_SAMPLES = 1594893            # whole Yelp dataset after filtering, only relevant if using _big pcikle files
+TRAIN_SET_SIZE = 30000           # these do not matter if using get_random_samples_strictly_uniform
 TEST_SET_SIZE = 3000
 
 BATCH_SIZE = 32
-DISPLAY_STEP = 100
+DISPLAY_STEP = 1000
 N_HIDDEN = 64 # hidden layer dimension
 N_CLASSES = 5 # number of labels
 N_INPUT = 300 # dimension of word2vec embedding
@@ -315,6 +315,7 @@ with tf.Session() as sess:
                   "{:.6f}".format(loss) + ", Training Accuracy= " + \
                   "{:.5f}".format(acc))
         step += 1
+
     print("Optimization Finished!")
     # Calculate accuracy
     test_data = testset.pad_all()

@@ -15,9 +15,11 @@ import numpy as np
 import random
 from collections import Counter
 
-data_file = "train_mat_filtered.pkl"
-vocab_file = "vocab_filtered.pkl"
-vocab_inv_file = "vocab_inv_filtered.pkl"
+import time
+
+data_file = "train_mat_filtered_big.pkl"
+vocab_file = "vocab_filtered_big.pkl"
+vocab_inv_file = "vocab_inv_filtered_big.pkl"
 
 # PARAMETERS
 N_FOLDS = 10  # 10% for test, 90% for train
@@ -28,9 +30,10 @@ METRICS_CHOICE = 'weighted'  # computes global precision, recall and f1 (not sam
 # Note: 'micro' causes recall and precision to be the same
 # http://stats.stackexchange.com/questions/99694/what-does-it-imply-if-accuracy-and-recall-are-the-same
 
-MAX_SAMPLES = 65323  # maximum number of available samples, do not change
-MAX_SAMPLES_TO_USE = 10000  # can be changed
-MAX_SAMPLES_PER_RATING = 4500 # can be set to up to 4002, after which default value is 4002
+#MAX_SAMPLES = 65323             # maximum number of available samples, do not change
+MAX_SAMPLES = 1594893           # whole Yelp dataset after filtering, only relevant if using _big pcikle files
+MAX_SAMPLES_TO_USE = 100000      # can be changed
+MAX_SAMPLES_PER_RATING = 4500   # can be set to up to 4002, after which default value is 4002
 
 assert (MAX_SAMPLES_TO_USE <= MAX_SAMPLES)
 
@@ -62,7 +65,7 @@ def transform_data(data):
     data = vect.fit_transform(data)
     features = vect.get_feature_names()
     print "Total # of features:", len(features)
-    print features[500:700]
+    #print features[500:700]
 
     return data, features
 
@@ -101,7 +104,7 @@ def evaluate(y_test, y_predicted, results):
                           average=METRICS_CHOICE)  # true positives /(true positives + false negatives)
     f1 = f1_score(y_test, y_predicted, pos_label=None, average=METRICS_CHOICE)
     accuracy = accuracy_score(y_test, y_predicted)  # num of correct predictions/ total num of predictions
-    print "accuracy = %.3f, precision = %.3f, recall = %.3f, f1 = %.3f" % (accuracy, precision, recall, f1), '\n'
+    print "accuracy = %.3f, precision = %.3f, recall = %.3f, f1 = %.3f" % (accuracy, precision, recall, f1)
     results['accuracy'].append(accuracy)
     results['precision'].append(precision)
     results['recall'].append(recall)
@@ -133,12 +136,14 @@ def main():
     print "Test labels shape ", y_test.shape, '\n'
 
     # Fitting a multinomial Naive Bayes classifer
-    print " ===== Multinomia Naive Bayes ====="
+    print " ===== Multinomial Naive Bayes ====="
+    start = time.time()
     gnb = MultinomialNB()
     gnb = gnb.fit(X_train, y_train)
     y_predicted = gnb.predict(X_test)
     print "Score = ", gnb.score(X_test, y_test)
     results = evaluate(y_test, y_predicted, results)
+    print "Time elapsed:", time.time() - start, '\n'
     #print results
 
     # Fitting a SVM classifier
@@ -153,15 +158,18 @@ def main():
     # results = evaluate(y_test, y_pred, results)
 
     # Fitting a k-Nearest Neighbors classifier
-    print " ===== KNN ====="
-    clf = KNeighborsClassifier(n_neighbors=10, algorithm='auto')
-    clf = clf.fit(X_train, y_train)
-    y_pred = clf.predict(X_test)
-    print "Score = ", clf.score(X_test, y_test)
-    results = evaluate(y_test, y_pred, results)
+    # print " ===== KNN ====="
+    # start = time.time()
+    # clf = KNeighborsClassifier(n_neighbors=10, algorithm='auto')
+    # clf = clf.fit(X_train, y_train)
+    # y_pred = clf.predict(X_test)
+    # print "Score = ", clf.score(X_test, y_test)
+    # results = evaluate(y_test, y_pred, results)
+    # print "Time elapsed:", time.time() - start, '\n'
 
     # Fitting a Decision Tree classifier
     print " ===== Decision Tree ====="
+    start = time.time()
     clf = tree.DecisionTreeClassifier(min_samples_split=50)
     clf = clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
@@ -170,6 +178,7 @@ def main():
     print important_indices
     print [features[index[0][0]] for index in important_indices]
     results = evaluate(y_test, y_pred, results)
+    print "Time elapsed:", time.time() - start, '\n'
 
 
 
