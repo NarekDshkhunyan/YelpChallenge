@@ -72,7 +72,7 @@ Distribution: non-uniform
 Train set size: 900 000
 Test set size (1%) : 100 000
 
-Representation: td-idf
+Representation: tf-idf
 Features: unigrams and bigrams, stop words included, total of 5195773 features
 
 Results: accuracy = 0.482, precision = 0.468, recall = 0.482, f1 = 0.326
@@ -85,7 +85,7 @@ Distribution: non-uniform
 Train set size: 900 000
 Test set size (1%) : 100 000
 
-Representation: td-idf
+Representation: tf-idf
 Features: unigrams and bigrams, stop words not included, total of 8263038 features
 
 Results: accuracy = 0.482, precision = 0.488, recall = 0.482, f1 = 0.325
@@ -98,7 +98,7 @@ Distribution: non-uniform
 Train set size: 900 000
 Test set size (1%) : 100 000
 
-Representation: td-idf
+Representation: tf-idf
 Features: unigrams, stop words not included, total of 102487 features
 
 Results: accuracy = 0.588, precision = 0.545, recall = 0.588, f1 = 0.533
@@ -111,7 +111,7 @@ Distribution: non-uniform
 Train set size: 900 000
 Test set size (1%) : 100 000
 
-Representation: td-idf
+Representation: tf-idf
 Features: unigrams, stop words included, total of 102694 features
 
 Results: accuracy = 0.591, precision = 0.552, recall = 0.591, f1 = 0.532
