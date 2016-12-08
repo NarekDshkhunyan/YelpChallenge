@@ -35,20 +35,16 @@ def load_data(source_file):
     stars = []
     with open(source_file, 'r') as f:
         for line in f:
-            print len(line)
-            all_reviews = json.loads(line)    # the entire json is just one giant line - that doesnt; make any sense
-            print len(all_reviews)
-            for review in all_reviews:
-                #print review
-                try:
-                    txt = str(review["text"])
-                    txt = tokenize(txt)
-                    txts.append(txt)
-                    stars.append(review["stars"])
-                    if len(stars)%100000 == 0 and len(stars)!=0:
-                        print "loaded ", len(stars)," reviews."
-                except:
-                    continue
+            review = json.loads(line) #now each review json is on its own line
+            try:
+                txt = str(review["text"])
+                txt = tokenize(txt)
+                txts.append(txt)
+                stars.append(review["stars"])
+                if len(stars)%100000 == 0 and len(stars)!=0:
+                    print "loaded ", len(stars)," reviews."
+            except:
+                continue
             
     return (txts, stars)
 

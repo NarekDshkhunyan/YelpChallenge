@@ -38,8 +38,8 @@ def filter_data(source_file, target_file, google_words):
                     elif valid(word):
                         valid_word += 1
 
-                print "stars:", review["stars"]
-                print not_valid, '\n'
+                #print "stars:", review["stars"]
+                #print not_valid, '\n'
                 not_valid_words.append(not_valid)
                 valid_words.append(valid_word)
 
@@ -53,7 +53,8 @@ def filter_data(source_file, target_file, google_words):
         print "Not valid words:", sum(not_valid_words)
         print "Valid words:", sum(valid_words)
     with open(target_file, 'w') as outfile:
-        json.dump(filtered_reviews, outfile)
+        for r in filtered_reviews:
+            outfile.write(json.dumps(filtered_reviews)+"\n")#to make sure each json is each line
     print len(filtered_reviews)
     return
 

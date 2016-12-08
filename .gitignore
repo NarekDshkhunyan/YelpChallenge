@@ -4,6 +4,7 @@ google_data
 word_file
 *.pyc
 *.pkl
+*.swp
 report_template/*.log
 report_template/*.out
 report_template/*.aux
