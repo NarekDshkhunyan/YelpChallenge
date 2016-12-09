@@ -17,7 +17,9 @@ http://stackoverflow.com/questions/4752626/epoch-vs-iteration-when-training-neur
 #data_file = "./Pickles/train_mat_filtered_big.pkl"
 data_file = "./train_mat_filtered.pkl"
 RUN_BIDIRECTIONAL = False
+print("Running Bidirectional LSTM: ", RUN_BIDIRECTIONAL)
 USE_UNIFORM_DISTRIBUTION = False
+print("Using uniform label distribution ", USE_UNIFORM_DISTRIBUTION)
 MAX_SAMPLES = 65323 # will be changed once the data is loaded
 MAX_SAMPLES_TO_USE = 1000
 TEST_SET_PERCENTAGE = 0.1
@@ -193,6 +195,8 @@ with tf.Session() as sess:
                   "{:.5f}".format(acc))
         step += 1
     print("Optimization Finished!")
+    print("Training network with batch size = ", BATCH_SIZE, " and number of iterations = ", TRAINING_ITERS)
+    print("Total time: " time.time()-start)
     # Calculate accuracy
     test_data = testset.pad_all()
     test_label = np.array([[i] for i in testset.labels])
