@@ -4,15 +4,18 @@ from nltk.tokenize import RegexpTokenizer
 import random
 import sys
 
+sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
+tokenizer = RegexpTokenizer(r'\w+')
+
 data_dir = "../yelp_data"
 data_file = "big_yelp_academic_dataset_review_filtered.json"
 out_file = "annotated_random_reviews.json"
 
 NUM_SENTENCES_TO_ANNOTATE = 3
 
-sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
-tokenizer = RegexpTokenizer(r'\w+')
-
+# Note:
+#    set NUM_SENTENCES_TO_ANNOTATE to a small number and then merge the annotated reviews using a small script
+#  the script only writes the annotations once everything has been annotated, so  you might lose work :(
 
 def process_review(sentences_arr):
 #     sentences = re.split(r"\.+\s*", review_text)
@@ -90,3 +93,5 @@ if __name__ == '__main__':
         for r in annotated_reviews:
             outfile.write(json.dumps(r))
             outfile.write("\n")
+            
+    print "ALL DONE!!!"
