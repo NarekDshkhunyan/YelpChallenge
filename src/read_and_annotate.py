@@ -2,7 +2,6 @@ import json
 import nltk.data
 from nltk.tokenize import RegexpTokenizer
 import random
-import sys
 
 sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
 tokenizer = RegexpTokenizer(r'\w+')
@@ -49,7 +48,7 @@ if __name__ == '__main__':
     source_json_file = open(file_name, "r")
     
     total_num_reviews = len([1 for line in source_json_file])
-#     print num_reviews  #   1594893 in all
+    print total_num_reviews  #   1594893 in all
     visited = set([])
     annotated_reviews = []
     annotated_review_count = 0
