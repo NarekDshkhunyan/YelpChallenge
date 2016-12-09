@@ -9,14 +9,14 @@ from collections import Counter
 import cPickle
 import numpy as np
 
-data_dir = "./Pickles"
+data_dir = "./"
 data_file = "train_mat_filtered.pkl"
 RUN_BIDIRECTIONAL = True
 
 MAX_SAMPLES = 65323             # maximum number of available samples, do not change
 #MAX_SAMPLES = 1594893            # whole Yelp dataset after filtering, only relevant if using _big pcikle files
-TRAIN_SET_SIZE = 30000           # these do not matter if using get_random_samples_strictly_uniform
-TEST_SET_SIZE = 3000
+TRAIN_SET_SIZE = 50000           # these do not matter if using get_random_samples_strictly_uniform
+TEST_SET_SIZE = 5000
 
 BATCH_SIZE = 32
 DISPLAY_STEP = 1000
@@ -244,9 +244,9 @@ def dynamicRNN(x, seqlen, weights, biases):
 
         # Define lstm cells with tensorflow
         # Forward direction cell
-        lstm_fw_cell = rnn_cell.BasicLSTMCell(N_HIDDEN, forget_bias=1.0)
+        lstm_fw_cell = rnn_cell.BasicLSTMCell(N_HIDDEN, forget_bias=0.8)
         # Backward direction cell
-        lstm_bw_cell = rnn_cell.BasicLSTMCell(N_HIDDEN, forget_bias=1.0)
+        lstm_bw_cell = rnn_cell.BasicLSTMCell(N_HIDDEN, forget_bias=0.7)
 
         # Get lstm cell output
         try:
