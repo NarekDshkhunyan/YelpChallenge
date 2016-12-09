@@ -8,12 +8,13 @@ from collections import Counter
 import cPickle
 import numpy as np
 from dataset import Dataset
-
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+import time
 '''
 Links and sources:
 http://stackoverflow.com/questions/4752626/epoch-vs-iteration-when-training-neural-networks
 '''
-
+print("Running Regressor!")
 #data_file = "./Pickles/train_mat_filtered_big.pkl"
 data_file = "./train_mat_filtered.pkl"
 RUN_BIDIRECTIONAL = False
@@ -164,13 +165,13 @@ def dynamicRNN(x, seqlen,weights, biases):
 
 pred = dynamicRNN(x, seqlen, weights, biases) # values in [0, 1]
 scaled_pred = tf.scalar_mul(NUM_LABELS,pred) # scale the data to be in [0,5]
-rounded_pred = tf.round(scaled_pred) # round each prediction to the nearest integer
+rounded_pred = tf.ceil(scaled_pred) # round each prediction to the nearest integer
 
 cost = tf.nn.l2_loss(scaled_pred-y, name="squared_error_cost")
 optimizer = tf.train.GradientDescentOptimizer(learning_rate=LEARNING_RATE).minimize(cost)
 
 # Evaluate model
-correct_pred = tf.equal(rounded_pred, y)
+correct_pred = tf.equal(rounded_pred, y)#tensor of true or false
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 # Initializing the variables
 init = tf.global_variables_initializer()
@@ -178,6 +179,7 @@ init = tf.global_variables_initializer()
 # Launch the graph
 with tf.Session() as sess:
     sess.run(init)
+    start = time.time()
     step = 1
     # Keep training until reach max iterations
     while step * BATCH_SIZE < TRAINING_ITERS:
@@ -196,11 +198,21 @@ with tf.Session() as sess:
         step += 1
     print("Optimization Finished!")
     print("Training network with batch size = ", BATCH_SIZE, " and number of iterations = ", TRAINING_ITERS)
-    print("Total time: " time.time()-start)
+    print("Total time: ", time.time()-start)
     # Calculate accuracy
     test_data = testset.pad_all()
     test_label = np.array([[i] for i in testset.labels])
     test_seqlen = testset.seq_len
-    print("Testing Accuracy:", sess.run(accuracy, feed_dict={x: test_data, y: test_label, seqlen: test_seqlen}))
-    #print("Predicted values:", rounded_pred.eval(feed_dict={x: test_data,seqlen: test_seqlen},session=sess))
+    
+    print("Evaluation")
+    # gets indices, not stars!
+    predictions = sess.run(rounded_pred,feed_dict={x: test_data,seqlen: test_seqlen})
+    precision = precision_score(test_label, predictions, pos_label=None, average="weighted")  
+    recall = recall_score(test_label, predictions, pos_label=None,
+                                 average="weighted")  
+    f1 = f1_score(test_label, predictions, pos_label=None,
+                                average="weighted")
+    accuracy = accuracy_score(test_label, predictions)
+    print("accuracy = %.3f, precision = %.3f, recall = %.3f, f1 = %.3f" % (accuracy, precision, recall, f1))
+
     

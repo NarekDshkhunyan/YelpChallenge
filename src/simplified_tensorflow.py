@@ -10,7 +10,7 @@ import cPickle
 import numpy as np
 from dataset import Dataset
 import time
-import sys
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 data_file = "./Pickles/train_mat_filtered_big.pkl"
 
 RUN_BIDIRECTIONAL = False
@@ -22,7 +22,7 @@ MAX_SAMPLES_TO_USE = 20000 # train set + test set
 TEST_SET_PERCENTAGE = 0.1
 
 BATCH_SIZE = 32
-DISPLAY_STEP = 1000
+DISPLAY_STEP = 10
 
 # Neural net parameters
 N_HIDDEN = 64 # hidden layer dimension
@@ -216,3 +216,15 @@ with tf.Session() as sess:
     test_label = testset.labels
     test_seqlen = testset.seq_len
     print("Testing Accuracy:", sess.run(accuracy, feed_dict={x: test_data, y: test_label, seqlen: test_seqlen}))
+    print("Evaluation")
+    # gets indices, not stars!
+    predictions = sess.run(tf.argmax(pred,1),feed_dict={x: test_data,seqlen: test_seqlen})
+    gold = np.argmax(test_label, 1) #same here, indices
+    precision = precision_score(gold, predictions, pos_label=None, average="weighted")  
+    recall = recall_score(gold, predictions, pos_label=None,
+                                 average="weighted")  
+    f1 = f1_score(gold, predictions, pos_label=None,
+                                average="weighted")
+    accuracy = accuracy_score(gold, predictions)
+    print("accuracy = %.3f, precision = %.3f, recall = %.3f, f1 = %.3f" % (accuracy, precision, recall, f1))
+
