@@ -1,0 +1,84 @@
+Best run (1M Multinomial Naive Bayes):
+             precision    recall  f1-score   support
+
+     1 star       0.68      0.70      0.69      9292
+     2 star       0.42      0.19      0.26      6921
+     3 star       0.45      0.31      0.36     11229
+     4 star       0.47      0.66      0.55     25175
+     5 star       0.80      0.75      0.77     47383
+
+avg / total       0.64      0.63      0.63    100000
+
+accuracy = 0.634, precision = 0.640, recall = 0.634, f1 = 0.628
+
+#########################################################################################
+Most important features - first line is CountVectorizer, second line is Tf-Idf vectorizer
+
+Unigrams:
+
+The top 5 most informative features for star category 1: 
+bad, don, place, service, food
+worst, horrible, food, closed, service
+
+The top 5 most informative features for star category 2: 
+great, place, good, service, food
+better, ok, good, service, food
+
+The top 5 most informative features for star category 3: 
+ok, great, service, food, good
+great, service, ok, food, good
+
+The top 5 most informative features for star category 4: 
+place, service, food, great, good
+place, service, food, great, good
+
+The top 5 most informative features for star category 5: 
+service, place, best, food, great
+place, love, food, best, great
+
+Bigrams:
+
+The top 5 most informative features for star category 1: 
+don waste, bad service, stay away, ow ow, customer service
+terrible service, place closed, horrible service, bad service, customer service
+
+The top 5 most informative features for star category 2: 
+good food, just ok, good service, customer service, food good
+good service, food ok, customer service, food good, just ok
+
+The top 5 most informative features for star category 3: 
+service good, good service, pretty good, good food, food good
+food ok, good service, pretty good, food good, good food
+
+The top 5 most informative features for star category 4: 
+food great, great service, food good, great food, good food
+great service, good service, food good, great food, good food
+
+The top 5 most informative features for star category 5: 
+highly recommend, food great, love place, great food, great service
+service great, food great, great service, great food, love place
+
+
+Trigrams:
+
+The top 5 most informative features for star category 1: 
+don waste money, worst customer service, horrible customer service, don waste time, ow ow ow
+don waste money, poor customer service, worst customer service, horrible customer service, don waste time
+
+The top 5 most informative features for star category 2: 
+food great service, food mediocre best, food good service, service good food, food just ok
+food mediocre best, meh ve experienced, food good service, ve experienced better, food just ok
+
+The top 5 most informative features for star category 3: 
+food pretty good, food just ok, service good food, good food good, food good service
+food pretty good, food just ok, service good food, good food good, food good service
+
+The top 5 most informative features for star category 4: 
+good food great, good food good, food good service, great food great, food great service
+good food great, good food good, great food great, food good service, food great service
+
+The top 5 most informative features for star category 5: 
+love love love, great service great, great customer service, food great service, great food great
+love love love, great service great, great customer service, food great service, great food great
+
+
