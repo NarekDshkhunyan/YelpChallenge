@@ -17,15 +17,15 @@ http://stackoverflow.com/questions/4752626/epoch-vs-iteration-when-training-neur
 print("Running Regressor!")
 #data_file = "./Pickles/train_mat_filtered_big.pkl"
 data_file = "./train_mat_filtered.pkl"
-RUN_BIDIRECTIONAL = False
+RUN_BIDIRECTIONAL = True
 print("Running Bidirectional LSTM: ", RUN_BIDIRECTIONAL)
 USE_UNIFORM_DISTRIBUTION = False
 print("Using uniform label distribution ", USE_UNIFORM_DISTRIBUTION)
 MAX_SAMPLES = 65323 # will be changed once the data is loaded
-MAX_SAMPLES_TO_USE = 1000
+MAX_SAMPLES_TO_USE = 20000
 TEST_SET_PERCENTAGE = 0.1
 
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 DISPLAY_STEP = 10
 
 # Neural net parameters
@@ -33,7 +33,7 @@ N_HIDDEN = 64 # hidden layer dimension
 N_CLASSES = 1 # number of labels
 N_INPUT = 300 # dimension of word2vec embedding
 LEARNING_RATE = 0.01
-TRAINING_ITERS = 100
+TRAINING_ITERS = 30000
 
 NUM_LABELS = 5
 def load_data():
@@ -158,8 +158,10 @@ def dynamicRNN(x, seqlen,weights, biases):
         index = tf.range(0, batch_size) * max_seq_len + (seqlen - 1)
         # Indexing
         outputs = tf.gather(tf.reshape(outputs, [-1, 2*N_HIDDEN]), index)
-        offset = tf.constant([[2.5] for i in xrange(scaled_pred.get_shape().as_list()[0])])
-        return tf.matmul(outputs, weights['out']) + biases['out']
+        output_node = tf.matmul(outputs, weights['out']) + biases['out']
+        # Use sigmoid activation function
+        sigmoid_node = tf.sigmoid(output_node)
+        return sigmoid_node
 
 
 
