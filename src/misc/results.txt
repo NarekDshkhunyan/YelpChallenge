@@ -1,5 +1,4 @@
-Running Naive Bayes
-==========================
+--------------------------
 
 Total number of samples 1M
 Distribution: non-uniform
@@ -116,4 +115,226 @@ Features: unigrams, stop words included, total of 102694 features
 
 Results: accuracy = 0.591, precision = 0.552, recall = 0.591, f1 = 0.532
 
+==========================
+
+Total number of samples 40K
+Distribution: non-uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams and bigrams, stop words included, total of 667963
+no stemming
+
+Results: accuracy = 0.550, precision = 0.608, recall =  0.550, f1 = 0.516
+
 --------------------------
+
+Total number of samples 40K
+Distribution: non-uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams, stop words included, total of 35107
+no stemming
+
+Results: accuracy = 0.605, precision = 0.612, recall = 0.605, f1 = 0.603
+
+--------------------------
+
+Total number of samples 40K
+Distribution: uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams and bigrams, stop words included, total of 705601
+no stemming
+
+Results: accuracy = 0.560, precision = 0.584, recall =  0.560,f1 = 0.561
+
+--------------------------
+
+Total number of samples 40K
+Distribution: uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams, stop words included, total of 35035
+no stemming
+
+Results: accuracy = 0.565, precision = 0.581, recall = 0.565, f1 = 0.565
+
+--------------------------
+
+Total number of samples 40K
+Distribution: uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams and bigrams, stop words not included, total of 861526
+no stemming
+
+Results: accuracy = 0.542, precision = 0.569, recall = 0.542, f1 = 0.548
+
+--------------------------
+
+Total number of samples 40K
+Distribution: uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams, stop words not included, total of 35108
+no stemming
+
+Results: accuracy = 0.565, precision = 0.568, recall = 0.565, f1 = 0.565
+
+--------------------------
+
+Total number of samples 40K
+Distribution: non-uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams, stop words not included, total of 34815
+no stemming
+
+Results: accuracy = 0.610, precision = 0.606, recall = 0.610, f1 = 0.601
+
+--------------------------
+
+Total number of samples 40K
+Distribution: non-uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams and bigrams, stop words not included, total of 803892
+no stemming
+
+Results: accuracy = 0.615, precision = 0.541, recall = 0.615, f1 = 0.567
+
+--------------------------
+
+Total number of samples 40K
+Distribution: non-uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams and bigrams, stop words not included, total of 672885
+yes stemming
+
+Results: accuracy = 0.580, precision = 0.487, recall = 0.580, f1 = 0.526
+
+--------------------------
+
+Total number of samples 40K
+Distribution: non-uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams, stop words not included, total of 22963
+yes stemming
+
+Results: accuracy = 0.578, precision = 0.595, recall = 0.578, f1 = 0.575
+
+--------------------------
+
+Total number of samples 40K
+Distribution: non-uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams, stop words included, total of 23330
+yes stemming
+
+Results: accuracy = 0.615, precision = 0.626, recall = 0.615, f1 = 0.614
+
+--------------------------
+
+Total number of samples 40K
+Distribution: non-uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams and bigrams, stop words included, total of 567155
+yes stemming
+
+Results: accuracy = 0.598, precision = 0.592, recall = 0.598, f1 = 0.555
+
+--------------------------
+
+Total number of samples 40K
+Distribution: uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams and bigrams, stop words not included, total of 718838
+yes stemming
+
+Results: accuracy = 0.502, precision = 0.538, recall = 0.0.502, f1 = 0.510
+
+--------------------------
+
+Total number of samples 40K
+Distribution: uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams, stop words not included, total of 22999
+yes stemming
+
+Results: accuracy = 0.527, precision = 0.531, recall = 0.527, f1 = 0.528
+
+--------------------------
+
+Total number of samples 40K
+Distribution: uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams, stop words included, total of 23047
+yes stemming
+
+Results: accuracy = 0.545, precision = 0.541, recall = 0.527, f1 = 0.529
+
+--------------------------
+
+Total number of samples 40K
+Distribution: uniform
+
+Train set size: 39 600
+Test set size (1%) : 400
+
+Representation: BOW
+Features: unigrams and bigrams, stop words included, total of 594851
+yes stemming
+
+Results: accuracy = 0.537, precision = 0.565, recall = 0.537, f1 = 0.524
