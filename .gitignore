@@ -10,3 +10,4 @@ report_template/*.out
 report_template/*.aux
 report_template/*.gz
 src/Pickles/*
+!yelp_data/annotated_reviews_compiled.json
