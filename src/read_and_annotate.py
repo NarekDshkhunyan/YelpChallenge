@@ -10,13 +10,13 @@ data_dir = "../yelp_data"
 data_file = "big_yelp_academic_dataset_review_filtered.json"
 out_file = "annotated_random_reviews.json"
 
-NUM_SENTENCES_TO_ANNOTATE = 3
+NUM_SENTENCES_TO_ANNOTATE = 30
 
 # Note:
 #    set NUM_SENTENCES_TO_ANNOTATE to a small number and then merge the annotated reviews using a small script
 #  the script only writes the annotations once everything has been annotated, so  you might lose work :(
 
-def process_review(sentences_arr):
+def process_review(sentences_arr, stars):
 #     sentences = re.split(r"\.+\s*", review_text)
 #     sentences = sent_detector.tokenize(review_text.strip())
     if len(sentences_arr) <10:
@@ -33,6 +33,7 @@ def process_review(sentences_arr):
     
     whole_review = ". ".join(sentences)
     print whole_review
+    print "Rating: ", stars
     for sentence in extracted:
         print "Sentence: " , sentence
         rating = input("Rating: ")
@@ -57,7 +58,7 @@ if __name__ == '__main__':
         indices_to_check = random_review_indices(total_num_reviews)
         line_number = 0
         
-        print "indices: " , indices_to_check
+#         print "indices: " , indices_to_check
         
         with open(file_name) as source_json_file:
             for line in source_json_file:
@@ -67,7 +68,10 @@ if __name__ == '__main__':
                     visited.add(line_number)
                     review = json.loads(line)
                     text = review["text"].encode('utf-8')
-                    annotations = process_review(sent_detector.tokenize(text))
+                    try:
+                        annotations = process_review(sent_detector.tokenize(text), review["stars"])
+                    except:
+                        break
                     if annotations:    
                         new_review = {}
                         new_review["line_number"] = line_number
@@ -79,10 +83,10 @@ if __name__ == '__main__':
                         annotated_reviews.append(new_review)
                         annotated_review_count += 1
                         
-                if line_number in visited:
-                    print line_number, "already in", visited
+#                 if line_number in visited:
+#                     print line_number, "already in", visited
                         
-                if annotated_review_count == 200: break
+                if annotated_review_count == NUM_SENTENCES_TO_ANNOTATE: break
                 line_number += 1
                 
         print "re-fetching more reviews. Annotated ", annotated_review_count, "so far."
