@@ -17,12 +17,13 @@ http://stackoverflow.com/questions/4752626/epoch-vs-iteration-when-training-neur
 print("Running Regressor!")
 #data_file = "./Pickles/train_mat_filtered_big.pkl"
 data_file = "./train_mat_filtered.pkl"
+data_file = "./Pickles/train_mat_filtered_big_sentences.pkl"
 RUN_BIDIRECTIONAL = False
 print("Running Bidirectional LSTM: ", RUN_BIDIRECTIONAL)
 USE_UNIFORM_DISTRIBUTION = False
 print("Using uniform label distribution ", USE_UNIFORM_DISTRIBUTION)
 MAX_SAMPLES = 65323 # will be changed once the data is loaded
-MAX_SAMPLES_TO_USE = 1000
+MAX_SAMPLES_TO_USE = 100
 TEST_SET_PERCENTAGE = 0.1
 
 BATCH_SIZE = 32
@@ -38,9 +39,9 @@ TRAINING_ITERS = 100
 NUM_LABELS = 5
 def load_data():
     with open(data_file) as f:
-        x,y, embedding_matrix = cPickle.load(f)
+        x,y, embedding_matrix,review_ids = cPickle.load(f)
     MAX_SAMPLES = len(x)
-    return (x,y, embedding_matrix)
+    return (x,y, embedding_matrix,review_ids)
 
 def get_random_samples(labels, num_samples,test_set_percentage,uniform=False):
     if not uniform:
@@ -63,24 +64,38 @@ def get_random_samples(labels, num_samples,test_set_percentage,uniform=False):
         np.random.shuffle(train_set_ind)
         np.random.shuffle(test_set_ind)
         return train_set_ind, test_set_ind
-
+def get_review_sentences(data, labels, review_ids,test_review_id):
+    indices = [i for i,x in enumerate(review_ids) if x == test_review_id]
+    if len(indices) ==0:
+        raise Exception("Chosen review id is not found!")
+    return [data[i] for i in indices], [labels[i] for i in indices]
 
 # ==========
 #   DATA
 # ==========
+with open("./Pickles/vocab_inv_filtered_big.pkl") as f:
+    vocab_inv = cPickle.load(f)
+data,labels,embedding_matrix,review_ids = load_data()
 
-data,labels,embedding_matrix = load_data()
 data = np.array(data)
-
 max_seq_len = max([len(review) for review in data])
 print("Loaded ", len(data)," samples.")
+
 train_set_ind,test_set_ind = get_random_samples(labels, MAX_SAMPLES_TO_USE, TEST_SET_PERCENTAGE,USE_UNIFORM_DISTRIBUTION)
 train_data, train_labels = data[train_set_ind],labels[train_set_ind]
-test_data, test_labels = data[test_set_ind],labels[test_set_ind]
+train_review_ids = np.array(review_ids)[train_set_ind]
+test_review_id = random.choice(review_ids)
+while test_review_id in train_review_ids:
+    test_review_id = random.choice(review_ids)
+print("Chosen review id ", test_review_id)
 
+test_data, test_labels = get_review_sentences(data,labels,review_ids, test_review_id)
+del data
+del labels
 
 trainset = Dataset(train_data, train_labels,embedding_matrix, BATCH_SIZE, max_seq_len)
 testset = Dataset(test_data, test_labels, embedding_matrix, BATCH_SIZE, max_seq_len)
+
 print("Train set size ", len(trainset.data))
 print("Test set size ", len(testset.data))
 
@@ -200,19 +215,31 @@ with tf.Session() as sess:
     print("Training network with batch size = ", BATCH_SIZE, " and number of iterations = ", TRAINING_ITERS)
     print("Total time: ", time.time()-start)
     # Calculate accuracy
-    test_data = testset.pad_all()
+    testdata = testset.pad_all()
     test_label = np.array([[i] for i in testset.labels])
     test_seqlen = testset.seq_len
     
     print("Evaluation")
-    # gets indices, not stars!
-    predictions = sess.run(rounded_pred,feed_dict={x: test_data,seqlen: test_seqlen})
-    precision = precision_score(test_label, predictions, pos_label=None, average="weighted")  
-    recall = recall_score(test_label, predictions, pos_label=None,
-                                 average="weighted")  
-    f1 = f1_score(test_label, predictions, pos_label=None,
-                                average="weighted")
-    accuracy = accuracy_score(test_label, predictions)
-    print("accuracy = %.3f, precision = %.3f, recall = %.3f, f1 = %.3f" % (accuracy, precision, recall, f1))
+    predictions = sess.run(scaled_pred,feed_dict={x: testdata,seqlen: test_seqlen})
+    print("Original review")
+    review = []
+    for sent in test_data:
+        review.extend([vocab_inv[word] for word in sent])
+    print(review)
+
+    star_rating = test_label[0][0]
+    closest_sent_ind = np.argmin(np.array([(star_rating-i)**2 for i in predictions]))
+    closest_sent = test_data[closest_sent_ind]
+    closest_sent = [vocab_inv[word] for word in closest_sent]
+    print("Closest sentence")
+    
+
+    # precision = precision_score(test_label, predictions, pos_label=None, average="weighted")  
+    # recall = recall_score(test_label, predictions, pos_label=None,
+    #                              average="weighted")  
+    # f1 = f1_score(test_label, predictions, pos_label=None,
+    #                             average="weighted")
+    # accuracy = accuracy_score(test_label, predictions)
+    # print("accuracy = %.3f, precision = %.3f, recall = %.3f, f1 = %.3f" % (accuracy, precision, recall, f1))
 
     

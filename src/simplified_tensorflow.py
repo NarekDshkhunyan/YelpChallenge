@@ -10,18 +10,19 @@ import cPickle
 import numpy as np
 from dataset import Dataset
 import time
+import json
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 data_file = "./Pickles/train_mat_filtered_big.pkl"
-
+configs_file = "lstm_configs.json"
 RUN_BIDIRECTIONAL = False
 print("Running Bidirectional LSTM: ", RUN_BIDIRECTIONAL)
 USE_UNIFORM_DISTRIBUTION = False
 print("Using uniform label distribution ", USE_UNIFORM_DISTRIBUTION)
 MAX_SAMPLES = 65323 # will be changed once the data is loaded
-MAX_SAMPLES_TO_USE = 20000 # train set + test set
-TEST_SET_PERCENTAGE = 0.1
+MAX_SAMPLES_TO_USE = 40000 # train set + test set
+TEST_SET_PERCENTAGE = 0.01
 
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 DISPLAY_STEP = 10
 
 # Neural net parameters
@@ -29,8 +30,14 @@ N_HIDDEN = 64 # hidden layer dimension
 N_CLASSES = 5 # number of labels
 N_INPUT = 300 # dimension of word2vec embedding
 LEARNING_RATE = 0.01
-TRAINING_ITERS = 1000
+TRAINING_ITERS = 100
 
+def get_configs():
+    configs = []
+    with open(configs_file) as f:
+        for line in f:
+            configs.append(json.loads(line))
+    return configs
 
 def load_data():
     with open(data_file) as f:
@@ -62,58 +69,6 @@ def get_random_samples(labels, num_samples,test_set_percentage,uniform=False):
         np.random.shuffle(test_set_ind)
         return train_set_ind, test_set_ind
 
-
-
-# ==========
-#   DATA
-# ==========
-
-data,labels,embedding_matrix = load_data()
-
-data = np.array(data)
-max_seq_len = max([len(review) for review in data])
-print("Loaded ", len(data)," samples.")
-encoder = LabelEncoder()
-encoder.fit(labels)
-
-
-train_set_ind,test_set_ind = get_random_samples(labels, MAX_SAMPLES_TO_USE, TEST_SET_PERCENTAGE,USE_UNIFORM_DISTRIBUTION)
-train_data, train_labels = data[train_set_ind],labels[train_set_ind]
-test_data, test_labels = data[test_set_ind],labels[test_set_ind]
-
-train_labels = encoder.transform(train_labels)
-train_labels = np_utils.to_categorical(train_labels)
-
-test_labels = encoder.transform(test_labels)
-test_labels = np_utils.to_categorical(test_labels)
-
-trainset = Dataset(train_data, train_labels,embedding_matrix, BATCH_SIZE, max_seq_len)
-testset = Dataset(test_data, test_labels, embedding_matrix, BATCH_SIZE, max_seq_len)
-
-print("Train set size ", len(trainset.data))
-print("Test set size ", len(testset.data))
-
-# ==========
-#   MODEL
-# ==========
-# # tf Graph input
-x = tf.placeholder("float", [None, max_seq_len, N_INPUT])
-y = tf.placeholder("float", [None, N_CLASSES])
-# A placeholder for indicating each sequence length
-seqlen = tf.placeholder(tf.int32, [None])
-# Define weights
-if RUN_BIDIRECTIONAL:
-    weights = {
-        'out': tf.Variable(tf.random_normal([2*N_HIDDEN, N_CLASSES]))
-    }
-else:
-    weights = {
-        'out': tf.Variable(tf.random_normal([N_HIDDEN, N_CLASSES]))
-    }   
-biases = {
-    'out': tf.Variable(tf.random_normal([N_CLASSES]))
-}
-
 def dynamicRNN(x, seqlen, weights, biases):
 
     # Prepare data shape to match `rnn` function requirements
@@ -126,6 +81,7 @@ def dynamicRNN(x, seqlen, weights, biases):
     x = tf.reshape(x, [-1, N_INPUT])
     # Split to get a list of 'n_steps' tensors of shape (batch_size, n_input)
     x = tf.split(0, max_seq_len, x)
+    dim = N_HIDDEN
     if not RUN_BIDIRECTIONAL:
         lstm_cell = rnn_cell.BasicLSTMCell(N_HIDDEN, forget_bias=1.0)
 
@@ -133,18 +89,7 @@ def dynamicRNN(x, seqlen, weights, biases):
         outputs, states = rnn.rnn(lstm_cell, x, dtype=tf.float32,sequence_length=seqlen)
 
         outputs = tf.pack(outputs)
-        outputs = tf.transpose(outputs, [1, 0, 2])
 
-        # Hack to build the indexing and retrieve the right output.
-        batch_size = tf.shape(outputs)[0]
-        # Start indices for each sample
-        index = tf.range(0, batch_size) * max_seq_len + (seqlen - 1)
-        # Indexing
-        outputs = tf.gather(tf.reshape(outputs, [-1, N_HIDDEN]), index)
-
-
-        # Linear activation, using outputs computed above
-        return tf.matmul(outputs, weights['out']) + biases['out']
 
     else:
 
@@ -159,72 +104,145 @@ def dynamicRNN(x, seqlen, weights, biases):
             outputs, _, _ = rnn.bidirectional_dynamic_rnn(lstm_fw_cell, lstm_bw_cell, x, dtype=tf.float32,sequence_length=seqlen)
         except Exception: # Old TensorFlow version only returns outputs not states
             outputs = rnn.bidirectional_rnn(lstm_fw_cell, lstm_bw_cell, x, dtype=tf.float32)
+        dim = 2*N_HIDDEN
 
         outputs = tf.pack(outputs[0])
-        outputs = tf.transpose(outputs, [1, 0, 2])
+    outputs = tf.transpose(outputs, [1, 0, 2])
 
-        batch_size = tf.shape(outputs)[0]
-        # Start indices for each sample
-        index = tf.range(0, batch_size) * max_seq_len + (seqlen - 1)
-        # Indexing
-        outputs = tf.gather(tf.reshape(outputs, [-1, 2*N_HIDDEN]), index)
+    batch_size = tf.shape(outputs)[0]
+    # Start indices for each sample
+    index = tf.range(0, batch_size) * max_seq_len + (seqlen - 1)
+    # Indexing
+    outputs = tf.gather(tf.reshape(outputs, [-1, dim]), index)
 
-        # Linear activation, using rnn inner loop last output
-        return tf.matmul(outputs, weights['out']) + biases['out']
+    # Linear activation, using rnn inner loop last output
+    return tf.matmul(outputs, weights['out']) + biases['out']
+# ==========
+#   DATA
+# ==========
+
+if __name__ == "__main__":
+
+    data,labels,embedding_matrix = load_data()
+
+    data = np.array(data)
+    max_seq_len = max([len(review) for review in data])
+    print("Loaded ", len(data)," samples.")
+    encoder = LabelEncoder()
+    encoder.fit(labels)
+    configs_set = get_configs()
+    for configs in configs_set:
+        print (configs)
+        TRAINING_ITERS = configs["TRAINING_ITERS"]
+        RUN_BIDIRECTIONAL = bool(configs["RUN_BIDIRECTIONAL"])
+        USE_UNIFORM_DISTRIBUTION = bool(configs["USE_UNIFORM_DISTRIBUTION"])
+        BATCH_SIZE = configs["BATCH_SIZE"]
+        N_HIDDEN = configs["N_HIDDEN"]
+        LEARNING_RATE = configs["LEARNING_RATE"]
+        train_set_ind,test_set_ind = get_random_samples(labels, MAX_SAMPLES_TO_USE, TEST_SET_PERCENTAGE,USE_UNIFORM_DISTRIBUTION)
+        train_data, train_labels = data[train_set_ind],labels[train_set_ind]
+        test_data, test_labels = data[test_set_ind],labels[test_set_ind]
+
+        train_labels = encoder.transform(train_labels)
+        train_labels = np_utils.to_categorical(train_labels)
+
+        test_labels = encoder.transform(test_labels)
+        test_labels = np_utils.to_categorical(test_labels)
+
+        trainset = Dataset(train_data, train_labels,embedding_matrix, BATCH_SIZE, max_seq_len)
+        testset = Dataset(test_data, test_labels, embedding_matrix, BATCH_SIZE, max_seq_len)
+
+        print("Train set size ", len(trainset.data))
+        print("Test set size ", len(testset.data))
+
+        # ==========
+        #   MODEL
+        # ==========
+        # # tf Graph input
+        x = tf.placeholder("float", [None, max_seq_len, N_INPUT])
+        y = tf.placeholder("float", [None, N_CLASSES])
+        # A placeholder for indicating each sequence length
+        seqlen = tf.placeholder(tf.int32, [None])
+        # Define weights
+        if RUN_BIDIRECTIONAL:
+            weights = {
+                'out': tf.Variable(tf.random_normal([2*N_HIDDEN, N_CLASSES]))
+            }
+        else:
+            weights = {
+                'out': tf.Variable(tf.random_normal([N_HIDDEN, N_CLASSES]))
+            }   
+        biases = {
+            'out': tf.Variable(tf.random_normal([N_CLASSES]))
+        }
 
 
+        start = time.time()
 
-pred = dynamicRNN(x, seqlen, weights, biases)
+        pred = dynamicRNN(x, seqlen, weights, biases)
 
-# Define loss and optimizer
-cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y))
-optimizer = tf.train.AdagradOptimizer(learning_rate=LEARNING_RATE).minimize(cost)
+        # Define loss and optimizer
+        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y))
+        optimizer = tf.train.AdagradOptimizer(learning_rate=LEARNING_RATE).minimize(cost)
 
-# Evaluate model
-correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(y,1))
-accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+        # Evaluate model
+        correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(y,1))
+        accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
-# Initializing the variables
-init = tf.global_variables_initializer()
-#init = tf.initialize_all_variables()
+        # Initializing the variables
+        init = tf.global_variables_initializer()
+        #init = tf.initialize_all_variables()
+        print("Time to build the network: ",time.time()-start)
+        # Launch the graph
+        with tf.Session() as sess:
+            sess.run(init)
+            start = time.time()
+            step = 1
+            # Keep training until reach max iterations
+            while step * BATCH_SIZE < TRAINING_ITERS:
+                batch_x, batch_y, batch_seqlen = trainset.next()
+                # Run optimization op (backprop)
+                sess.run(optimizer, feed_dict={x: batch_x, y: batch_y, seqlen: batch_seqlen})
+                if step % DISPLAY_STEP == 0:
+                    # Calculate batch accuracy
+                    acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y, seqlen: batch_seqlen})
+                    # Calculate batch loss
+                    loss = sess.run(cost, feed_dict={x: batch_x, y: batch_y, seqlen: batch_seqlen})
+                    print("Iter " + str(step*BATCH_SIZE) + ", Minibatch Loss= " + \
+                          "{:.6f}".format(loss) + ", Training Accuracy= " + \
+                          "{:.5f}".format(acc))
+                step += 1
 
-# Launch the graph
-with tf.Session() as sess:
-    sess.run(init)
-    start = time.time()
-    step = 1
-    # Keep training until reach max iterations
-    while step * BATCH_SIZE < TRAINING_ITERS:
-        batch_x, batch_y, batch_seqlen = trainset.next()
-        # Run optimization op (backprop)
-        sess.run(optimizer, feed_dict={x: batch_x, y: batch_y, seqlen: batch_seqlen})
-        if step % DISPLAY_STEP == 0:
-            # Calculate batch accuracy
-            acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y, seqlen: batch_seqlen})
-            # Calculate batch loss
-            loss = sess.run(cost, feed_dict={x: batch_x, y: batch_y, seqlen: batch_seqlen})
-            print("Iter " + str(step*BATCH_SIZE) + ", Minibatch Loss= " + \
-                  "{:.6f}".format(loss) + ", Training Accuracy= " + \
-                  "{:.5f}".format(acc))
-        step += 1
+            print("Optimization Finished!")
+            print("Training network with batch size = ", BATCH_SIZE, " and number of iterations = ", TRAINING_ITERS)
+            print("Total time: ", time.time()-start)
+            # Calculate accuracy
+            test_data = testset.pad_all()
+            test_label = testset.labels
+            test_seqlen = testset.seq_len
+            predictions = sess.run(tf.argmax(pred,1),feed_dict = {x:test_data, seqlen:test_seqlen})
+            # step = 0
+            # predictions = np.zeros(len(testset.labels))
+            # gold = np.zeros(len(testset.labels))
+            # count = 0
+            # while step * BATCH_SIZE <= len(testset.labels):
+            #     step+=1
+            #     test_data,test_label,test_seqlen = testset.next()
+            #     batch_predictions = sess.run(tf.argmax(pred,1), feed_dict={x:test_data, seqlen:test_seqlen})
+            #     predictions[count:count+len(test_label)] = batch_predictions
+            #     gold[count:count+len(test_label)] = np.argmax(test_label,1)
+            #     count+=len(test_label)
 
-    print("Optimization Finished!")
-    print("Training network with batch size = ", BATCH_SIZE, " and number of iterations = ", TRAINING_ITERS)
-    print("Total time: ", time.time()-start)
-    # Calculate accuracy
-    test_data = testset.pad_all()
-    test_label = testset.labels
-    test_seqlen = testset.seq_len
-    print("Testing Accuracy:", sess.run(accuracy, feed_dict={x: test_data, y: test_label, seqlen: test_seqlen}))
-    print("Evaluation")
-    # gets indices, not stars!
-    predictions = sess.run(tf.argmax(pred,1),feed_dict={x: test_data,seqlen: test_seqlen})
-    gold = np.argmax(test_label, 1) #same here, indices
-    precision = precision_score(gold, predictions, pos_label=None, average="weighted")  
-    recall = recall_score(gold, predictions, pos_label=None,
-                                 average="weighted")  
-    f1 = f1_score(gold, predictions, pos_label=None,
-                                average="weighted")
-    accuracy = accuracy_score(gold, predictions)
-    print("accuracy = %.3f, precision = %.3f, recall = %.3f, f1 = %.3f" % (accuracy, precision, recall, f1))
+            print("Evaluation")
+            print(predictions)
+            # gets indices, not stars!
+            gold = np.argmax(test_labels,1)
+            print(gold)
+            precision = precision_score(gold, predictions, pos_label=None, average="weighted")  
+            recall = recall_score(gold, predictions, pos_label=None,
+                                         average="weighted")  
+            f1 = f1_score(gold, predictions, pos_label=None,
+                                        average="weighted")
+            accuracy = accuracy_score(gold, predictions)
+            print("accuracy = %.3f, precision = %.3f, recall = %.3f, f1 = %.3f" % (accuracy, precision, recall, f1))
 
