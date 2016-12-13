@@ -6,74 +6,80 @@ sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
 tokenizer = RegexpTokenizer(r'\w+')
 
 #-------------------------------------------------------------------------------------------------------------
-UNIGRAMS = {1: ["bad", "don't", "place", "service", "food", "worst", "horrible", "food", "closed", "service"],
-            2: ["great", "place", "good", "service", "food", "better", "ok", "good", "service", "food"],
-            3: ["ok", "great", "service", "food", "good", "great", "service", "ok", "food", "good"],
+UNIGRAMS = {1: ["bad", "place", "service", "food", "worst", "horrible", "closed"],
+            2: ["great", "place", "good", "service", "food", "better", "ok"],
+            3: ["ok", "great", "service", "food", "good", "ok"],
             4: ["place", "service", "food", "great", "good"],
-            5: ["service", "place", "best", "food", "great", "place", "love", "food", "best", "great"]}
+            5: ["service", "place", "best", "food", "great", "love"]}
 
-BIGRAMS = {1: ["don't waste", "bad service", "stay away", "ow ow", "customer service", "terrible service", "place closed", "horrible service", "bad service", "customer service"],
-           2: ["good food", "just ok", "good service", "customer service", "food good", "good service", "food ok", "customer service", "food good", "just ok"],
-           3: ["service good", "good service", "pretty good", "good food", "food good", "food ok", "good service", "pretty good", "food good", "good food"],
-           4: ["food great", "great service", "food good", "great food", "good food", "great service", "good service", "food good", "great food", "good food"],
-           5: ["highly recommend", "food great", "love place", "great food", "great service", "service great", "food great", "great service", "great food", "love place"]}
+BIGRAMS = {1: ["don't waste", "bad service", "stay away", "ow ow", "customer service", "terrible service", "place closed", "horrible service"],
+           2: ["good food", "just ok", "good service", "customer service", "food good", "food ok"],
+           3: ["service good", "good service", "pretty good", "good food", "food good", "food ok"],
+           4: ["food great", "great service", "food good", "great food", "good food", "good service"],
+           5: ["highly recommend", "food great", "love place", "great food", "great service", "service great"]}
 
 TRIGRAMS = {1: ["don't waste money", "worst customer service", "horrible customer service", "don't' waste time", "ow ow ow", \
-                "don't waste money", "poor customer service", "worst customer service", "horrible customer service", "don't waste time"],
+                "poor customer service"],
             2: ["food great service", "food mediocre best", "food good service", "service good food", "food just ok", \
-                "food mediocre best", "meh ve experienced", "food good service", "ve experienced better", "food just ok"],
+                "meh ve experienced", "ve experienced better"],
             3: ["food pretty good", "food just ok", "service good food", "good food good", "food good service"],
             4: ["good food great", "good food good", "food good service", "great food great", "food great service"],
             5: ["love love love", "great service great", "great customer service", "food great service", "great food great"]}
 
+REVIEW_IDS = set()
+with open("../annotated_reviews/annotated_reviews_compiled.json", 'r') as f:
+    for line in f:
+        review = json.loads(line)
+        review_id = review["review_id"]
+        REVIEW_IDS.add(review_id)
+
+print REVIEW_IDS
 
 #-------------------------------------------------------------------------------------------------------------
-# def get_random_samples(data, labels):
-#
-#     indices = random.sample(xrange(len(data)), MAX_SAMPLES_TO_USE)
-#     return data[indices], labels[indices]
-
-
-def tokenize(text):
-    #split on white spaces, remove punctuation, lower case each word
-    return [word.lower() for word in tokenizer.tokenize(text)]
-
-
 def filter_data(source_file):
+
+    summary_sentences = set()
     with open(source_file, 'r') as f:
         for line in f:
+            #print line
             review = json.loads(line)
-            summary_sentences = []
-            try:
-                text = review["text"]
-                label = review["stars"]
-                sentences = sent_detector.tokenize(text)
-                #sentences = [sentence for sentence in sentences]
-                print label, '\n', sentences
+            if review["review_id"] in REVIEW_IDS:
+                try:
+                    text = review["text"]
+                    label = review["stars"]
+                    sentences = sent_detector.tokenize(text)
+                    print label, '\n', sentences
 
-                features = UNIGRAMS[label] + BIGRAMS[label] + TRIGRAMS[label]
-                for feature in features:
+                    features = UNIGRAMS[label] + BIGRAMS[label] + TRIGRAMS[label]
                     for sentence in sentences:
-                        if feature in sentence:
-                            print "Feature:", feature
-                            print "Extracted sentence:", sentence
-                    #print [sentence for sentence in sentences]
-                    #print filter(feature in sentences, sentences)
+                        for feature in features:
+                            if feature in sentence:
+                                print "Feature:", feature
+                                print "Extracted sentence:", sentence
+                                summary_sentences.add((review["review_id"], label, sentence))
 
-                #print filter(lambda x: x.find())
-                #print filter(UNIGRAMS[label] in sentences, sentences)
-                #print [[[sentence if feature in sentence] for feature in UNIGRAMS[label]] for sentence in sentences]
-                # for sentence in sentences:
-                #     for feature in UNIGRAMS[label]:
-                #         if feature in sentence: print sentence
-            except:
-                continue
+                except:
+                    continue
+
+    print summary_sentences
+    return summary_sentences
+
+#-------------------------------------------------------------------------------------------------------------
+def write_to_json(summary_sentences, target_file):
+
+    with open(target_file, 'w') as outfile:
+        for r in summary_sentences:
+            outfile.write(json.dumps(r))
+            outfile.write("\n")
+
 
 #-------------------------------------------------------------------------------------------------------------
 def main():
 
     source_file = "../yelp_data/yelp_academic_dataset_review.json"
-    filter_data(source_file)
+    target_file = "../annotated_reviews/extracted_sentences.json"
+    summary_sentences = filter_data(source_file)
+    write_to_json(summary_sentences, target_file)
 
 
 # -------------------------------------------------------------------------------------------------------------

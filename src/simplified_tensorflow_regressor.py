@@ -17,7 +17,6 @@ http://stackoverflow.com/questions/4752626/epoch-vs-iteration-when-training-neur
 print("Running Regressor!")
 #data_file = "./Pickles/train_mat_filtered_big.pkl"
 data_file = "./train_mat_filtered.pkl"
-<<<<<<< HEAD
 data_file = "./Pickles/train_mat_filtered_big_sentences.pkl"
 RUN_BIDIRECTIONAL = False
 print("Running Bidirectional LSTM: ", RUN_BIDIRECTIONAL)

@@ -19,7 +19,7 @@ print("Running Bidirectional LSTM: ", RUN_BIDIRECTIONAL)
 USE_UNIFORM_DISTRIBUTION = False
 print("Using uniform label distribution ", USE_UNIFORM_DISTRIBUTION)
 MAX_SAMPLES = 65323 # will be changed once the data is loaded
-MAX_SAMPLES_TO_USE = 40000 # train set + test set
+MAX_SAMPLES_TO_USE = 20000 # train set + test set
 TEST_SET_PERCENTAGE = 0.01
 
 BATCH_SIZE = 64
