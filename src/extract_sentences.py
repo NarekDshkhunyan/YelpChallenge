@@ -48,7 +48,7 @@ def filter_data(source_file):
                     text = review["text"]
                     label = review["stars"]
                     sentences = sent_detector.tokenize(text)
-                    print label, '\n', sentences
+                    print label, '\n', text
 
                     features = UNIGRAMS[label] + BIGRAMS[label] + TRIGRAMS[label]
                     for sentence in sentences:
@@ -79,7 +79,7 @@ def main():
     source_file = "../yelp_data/yelp_academic_dataset_review.json"
     target_file = "../annotated_reviews/extracted_sentences.json"
     summary_sentences = filter_data(source_file)
-    write_to_json(summary_sentences, target_file)
+    #write_to_json(summary_sentences, target_file)
 
 
 # -------------------------------------------------------------------------------------------------------------
