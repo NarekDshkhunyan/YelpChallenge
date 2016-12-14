@@ -5,6 +5,7 @@ word_file
 *.pyc
 *.pkl
 *.swp
+*.png
 report_template/*.log
 report_template/*.out
 report_template/*.aux
